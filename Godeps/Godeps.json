@@ -7,7 +7,7 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/aetrion/dnsimple-go/dnsimple",
-			"Rev": "84e88b242fb855c1e2d472a2d36789d3374f2325"
+			"Rev": "c5cafc17e0bd6a288a5cdb27a63e924b64ace334"
 		},
 		{
 			"ImportPath": "github.com/bluele/slack",

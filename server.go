@@ -103,10 +103,11 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	text := EventText(event)
+	eventHeader := event.EventHeader()
 	log.Println(text)
 
 	if !slackDryRun {
-		log.Printf("Sending to slack...\n")
+		log.Printf("Sending event %v to slack...\n", eventHeader.RequestID)
 
 		webhook := slack.NewWebHook(slackWebhookURL)
 		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{
@@ -114,10 +115,10 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 			Attachments: []*slack.Attachment{
 				&slack.Attachment{
 					Fallback: text,
-					Color: "good",
+					Color:    "good",
 					Fields: []*slack.AttachmentField{
 						&slack.AttachmentField{
-							Title: event.Event(),
+							Title: event.EventName(),
 							Value: text,
 						},
 					},
@@ -125,20 +126,20 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 		if slackErr != nil {
-			log.Printf("Error sending to slack: %v\n", err)
+			log.Printf("Error sending %v to slack: %v\n", err)
 		}
 	}
 }
 
 func EventText(e webhook.Event) (text string) {
-	//base  := e.(*webhook.GenericEvent)
-	actor := fmt.Sprintf("%v at %v", "Someone", "<https://dnsimple.com|Awesome Company>")
+	header := e.EventHeader()
+	actor := fmt.Sprintf("%v at %v", header.Actor.Pretty, "<https://dnsimple.com|Awesome Company>")
 
 	switch event := e.(type) {
 	case *webhook.DomainCreateEvent:
 		text = fmt.Sprintf("%s created the domain <https://dnsimple.com|%s>", actor, event.Domain.Name)
 	default:
-		text = fmt.Sprintf("%s performed an unknown action %s", actor, event.Event())
+		text = fmt.Sprintf("%s performed an unknown action %s", actor, event.EventName())
 	}
 
 	return
