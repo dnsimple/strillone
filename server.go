@@ -104,10 +104,10 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 
 	text := EventText(event)
 	eventHeader := event.EventHeader()
-	log.Println(text)
+	log.Printf("[event:%v] %s", eventHeader.RequestID, text)
 
 	if !slackDryRun {
-		log.Printf("Sending event %v to slack...\n", eventHeader.RequestID)
+		log.Printf("[event:%v] Sending event to slack...\n", eventHeader.RequestID)
 
 		webhook := slack.NewWebHook(slackWebhookURL)
 		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{
@@ -126,7 +126,7 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 		if slackErr != nil {
-			log.Printf("Error sending %v to slack: %v\n", err)
+			log.Printf("[event:%v] Error sending to slack: %v\n", eventHeader.RequestID, err)
 		}
 	}
 }
