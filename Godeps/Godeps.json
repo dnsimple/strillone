@@ -4,5 +4,14 @@
 	"Packages": [
 		"./..."
 	],
-	"Deps": []
+	"Deps": [
+		{
+			"ImportPath": "github.com/aetrion/dnsimple-go/dnsimple",
+			"Rev": "84e88b242fb855c1e2d472a2d36789d3374f2325"
+		},
+		{
+			"ImportPath": "github.com/bluele/slack",
+			"Rev": "6d00f93158acefc3a0f605c171d1baa80ba86b73"
+		}
+	]
 }

@@ -2,17 +2,23 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
+	"github.com/bluele/slack"
 )
 
 const what = "dnsimple-slackhooks"
+const dnsimpleURL = "https://dnsimple.com"
 
 var (
 	httpPort        string
 	slackWebhookURL string
+	slackDryRun     bool
 )
 
 func init() {
@@ -21,6 +27,11 @@ func init() {
 	slackWebhookURL = os.Getenv("SLACK_WEBHOOK_URL")
 	if slackWebhookURL == "" {
 		log.Fatalln("Slack Webhook URL is missing")
+	}
+
+	slackDryRun = true
+	if slackWebhookURL != "-" {
+		slackDryRun = false
 	}
 
 	httpPort = os.Getenv("PORT")
@@ -51,6 +62,7 @@ func NewServer() *Server {
 	router := http.NewServeMux()
 	server := &Server{mux: router}
 	router.HandleFunc("/", server.Root)
+	router.HandleFunc("/w", server.Webhook)
 	return server
 }
 
@@ -66,4 +78,54 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 
 	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), what))
+}
+
+func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
+
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var err error
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Printf("Error parsing body: %v\n", err)
+	}
+
+	event, err := webhook.Parse(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Printf("Error parsing event: %v\n", err)
+	}
+
+	text := EventText(event)
+	log.Println(text)
+
+	if !slackDryRun {
+		log.Printf("Sending to slack...\n")
+
+		webhook := slack.NewWebHook(slackWebhookURL)
+		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{Text: text})
+		if slackErr != nil {
+			log.Printf("Error sending to slack: %v\n", err)
+		}
+	}
+}
+
+func EventText(e webhook.Event) (text string) {
+	//base  := e.(*webhook.GenericEvent)
+	actor := fmt.Sprintf("%v from %v", "Someone", "<https://dnsimple.com|Awesome Company>")
+
+	switch event := e.(type) {
+	case *webhook.DomainCreateEvent:
+		text = fmt.Sprintf("%s created the domain <https://dnsimple.com|%s>", actor, event.Domain.Name)
+	default:
+		text = fmt.Sprintf("%s performed an unknown action %s", actor, event.Event())
+	}
+
+	return
 }
