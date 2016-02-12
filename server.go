@@ -111,7 +111,18 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 		webhook := slack.NewWebHook(slackWebhookURL)
 		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{
 			Username: "DNSimple",
-			Text:     text,
+			Attachments: []*slack.Attachment{
+				&slack.Attachment{
+					Fallback: text,
+					Color: "good",
+					Fields: []*slack.AttachmentField{
+						&slack.AttachmentField{
+							Title: event.Event(),
+							Value: text,
+						},
+					},
+				},
+			},
 		})
 		if slackErr != nil {
 			log.Printf("Error sending to slack: %v\n", err)
@@ -121,7 +132,7 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 
 func EventText(e webhook.Event) (text string) {
 	//base  := e.(*webhook.GenericEvent)
-	actor := fmt.Sprintf("%v from %v", "Someone", "<https://dnsimple.com|Awesome Company>")
+	actor := fmt.Sprintf("%v at %v", "Someone", "<https://dnsimple.com|Awesome Company>")
 
 	switch event := e.(type) {
 	case *webhook.DomainCreateEvent:
