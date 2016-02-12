@@ -1,0 +1,8 @@
+{
+	"ImportPath": "github.com/weppos/dnsimple-slackhooks",
+	"GoVersion": "go1.5.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": []
+}
