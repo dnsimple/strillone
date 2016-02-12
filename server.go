@@ -109,7 +109,10 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Sending to slack...\n")
 
 		webhook := slack.NewWebHook(slackWebhookURL)
-		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{Text: text})
+		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{
+			Username: "DNSimple",
+			Text:     text,
+		})
 		if slackErr != nil {
 			log.Printf("Error sending to slack: %v\n", err)
 		}
