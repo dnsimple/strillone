@@ -65,5 +65,5 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
-	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":%s}`, time.Now().Unix(), what))
+	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), what))
 }
