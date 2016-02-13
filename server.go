@@ -128,20 +128,25 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprout
 
 func MexText(e webhook.Event) (text string) {
 	header := e.EventHeader()
-	actor := fmt.Sprintf("[%v] %v", MexDURL("Awesome Company", "/a/1"), header.Actor.Pretty)
+	account := header.Account
+	if account == nil {
+		account = &webhook.Account{Display: "Unknown"}
+		account.ID = 0
+	}
+	prefix := fmt.Sprintf("[%v] %v", MexDURL(account.Display, fmt.Sprintf("/a/%v", account.ID)), header.Actor.Pretty)
 
 	switch event := e.(type) {
 	case *webhook.DomainEvent:
 		switch event.Name {
 		case "domain.create":
-			text = fmt.Sprintf("%s created the domain %s", actor, MexDURL(event.Domain.Name, "/"))
+			text = fmt.Sprintf("%s created the domain %s", prefix, MexDURL(event.Domain.Name, "/"))
 		case "domain.delete":
-			text = fmt.Sprintf("%s deleted the domain %s", actor, MexDURL(event.Domain.Name, "/"))
+			text = fmt.Sprintf("%s deleted the domain %s", prefix, MexDURL(event.Domain.Name, "/"))
 		default:
-			text = fmt.Sprintf("%s performed a %s on domain %s", event.Name, actor, MexDURL(event.Domain.Name, "/"))
+			text = fmt.Sprintf("%s performed a %s on domain %s", event.Name, prefix, MexDURL(event.Domain.Name, "/"))
 		}
 	default:
-		text = fmt.Sprintf("%s performed a %s", actor, event.EventName())
+		text = fmt.Sprintf("%s performed a %s", prefix, event.EventName())
 	}
 
 	return
