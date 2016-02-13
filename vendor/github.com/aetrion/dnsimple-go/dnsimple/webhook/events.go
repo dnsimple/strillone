@@ -8,17 +8,29 @@ func switchEvent(name string, payload []byte) (Event, error) {
 	var event Event
 
 	switch name {
-	case "domain.create":
+	case // contact
+		"contact.create",
+		"contact.update",
+		"contact.delete":
+		event = &ContactEvent{}
+	case // domain
+		"domain.auto_renew", // TODO
+		"domain.auto_renewal_enable",
+		"domain.auto_renewal_disable",
+		"domain.create",
+		"domain.delete",
+		"domain.register",           // TODO
+		"domain.renew",              // TODO
+		"domain.delegation_change",  // TODO
+		"domain.registrant_change",  // TODO
+		"domain.resolution_enable",  // TODO
+		"domain.resolution_disable", // TODO
+		"domain.token_reset",
+		"domain.transfer": // TODO
 		event = &DomainEvent{}
-	case "domain.delete":
-		event = &DomainEvent{}
-	case "domain.token_reset":
-		event = &DomainEvent{}
-	case "domain.auto_renew_enable":
-		event = &DomainEvent{}
-	case "domain.auto_renew_disable":
-		event = &DomainEvent{}
-	case "webhook.create":
+	case // webhook
+		"webhook.create",
+		"webhook.delete":
 		event = &WebhookEvent{}
 	default:
 		event = &GenericEvent{}
@@ -46,6 +58,25 @@ func ParseGenericEvent(e *GenericEvent, payload []byte) error {
 }
 
 //
+// ContactEvent represents the base event sent for a contact action.
+//
+type ContactEvent struct {
+	Event_Header
+	Data    *ContactEvent     `json:"data"`
+	Contact *dnsimple.Contact `json:"contact"`
+}
+
+// ParseContactEvent unpacks the data into a ContactEvent.
+func ParseContactEvent(e *ContactEvent, payload []byte) error {
+	return e.parse(payload)
+}
+
+func (e *ContactEvent) parse(payload []byte) error {
+	e.payload, e.Data = payload, e
+	return unmashalEvent(payload, e)
+}
+
+//
 // DomainEvent represents the base event sent for a domain action.
 //
 type DomainEvent struct {
@@ -65,7 +96,7 @@ func (e *DomainEvent) parse(payload []byte) error {
 }
 
 //
-// Webhook represents a generic event, where the data is a simple map of strings.
+// WebhookEvent represents the base event sent for a webhook action.
 //
 type WebhookEvent struct {
 	Event_Header

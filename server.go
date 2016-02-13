@@ -132,17 +132,50 @@ func MexText(e webhook.Event) (text string) {
 	prefix := fmt.Sprintf("[%v] %v", MexDURL(account.Display, fmt.Sprintf("/a/%v/account", account.ID)), header.Actor.Pretty)
 
 	switch event := e.(type) {
-	case *webhook.DomainEvent:
+	case *webhook.ContactEvent:
+		contactLink := MexDURL(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmt.Sprintf("/contacts/%s", event.Contact.ID))
 		switch event.Name {
-		case "domain.create":
-			text = fmt.Sprintf("%s created the domain %s", prefix, MexDURL(event.Domain.Name, "/"))
-		case "domain.delete":
-			text = fmt.Sprintf("%s deleted the domain %s", prefix, MexDURL(event.Domain.Name, "/"))
+		case "contact.create":
+			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
+		case "contact.update":
+			text = fmt.Sprintf("%s deleted the contact %s", prefix, contactLink)
+		case "contact.delete":
+			text = fmt.Sprintf("%s deleted the contact %s", prefix, contactLink)
 		default:
-			text = fmt.Sprintf("%s performed a %s on domain %s", event.Name, prefix, MexDURL(event.Domain.Name, "/"))
+			text = fmt.Sprintf("%s performed %s", prefix, event.EventName())
+		}
+	case *webhook.DomainEvent:
+		domainLink := MexDURL(event.Domain.Name, "/domains/"+event.Domain.Name)
+		switch event.Name {
+		case "domain.auto_renewal_enable":
+			text = fmt.Sprintf("%s enabled auto-renewal for the domain %s", prefix, domainLink)
+		case "domain.auto_renewal_disable":
+			text = fmt.Sprintf("%s disabled auto-renewal for the domain %s", prefix, domainLink)
+		case "domain.create":
+			text = fmt.Sprintf("%s created the domain %s", prefix, domainLink)
+		case "domain.delete":
+			text = fmt.Sprintf("%s deleted the domain %s", prefix, domainLink)
+		case "domain.resolution_enable":
+			text = fmt.Sprintf("%s enabled resolution for the domain %s", prefix, domainLink)
+		case "domain.resolution_disable":
+			text = fmt.Sprintf("%s disabled resolution for the domain %s", prefix, domainLink)
+		case "domain.token_reset":
+			text = fmt.Sprintf("%s reset the token for the domain %s", prefix, domainLink)
+		default:
+			text = fmt.Sprintf("%s performed %s on domain %s", prefix, event.Name, domainLink)
+		}
+	case *webhook.WebhookEvent:
+		webhookLink := ""
+		switch event.Name {
+		case "webhook.create":
+			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
+		case "webhook.delete":
+			text = fmt.Sprintf("%s deleted the webhook %s", prefix, webhookLink)
+		default:
+			text = fmt.Sprintf("%s performed %s on webhook %s", prefix, event.Name, webhookLink)
 		}
 	default:
-		text = fmt.Sprintf("%s performed a %s", prefix, event.EventName())
+		text = fmt.Sprintf("%s performed %s", prefix, event.EventName())
 	}
 
 	return
