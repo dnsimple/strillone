@@ -138,7 +138,7 @@ func MexText(e webhook.Event) (text string) {
 		case "contact.create":
 			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
 		case "contact.update":
-			text = fmt.Sprintf("%s deleted the contact %s", prefix, contactLink)
+			text = fmt.Sprintf("%s update the contact %s", prefix, contactLink)
 		case "contact.delete":
 			text = fmt.Sprintf("%s deleted the contact %s", prefix, contactLink)
 		default:
