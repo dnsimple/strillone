@@ -112,6 +112,7 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 		webhook := slack.NewWebHook(slackWebhookURL)
 		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{
 			Username: "DNSimple",
+			IconUrl:  "http://cl.ly/2t0u2Q380N3y/trusty.png",
 			Attachments: []*slack.Attachment{
 				&slack.Attachment{
 					Fallback: text,
