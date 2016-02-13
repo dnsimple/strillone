@@ -11,6 +11,7 @@ import (
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 	"github.com/bluele/slack"
 	"github.com/julienschmidt/httprouter"
+	"strings"
 )
 
 const what = "dnsimple-slackhooks"
@@ -69,7 +70,8 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 }
 
 func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
+	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
+	log.Printf("%s %s\n", r.Method, strings.Replace(r.URL.RequestURI(), slackGamma, slackGamma[0:6]+"...", 1))
 
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -97,7 +99,6 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprout
 	log.Printf("[event:%v] %s", eventHeader.RequestID, text)
 
 	// Send the webhook to Slack
-	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
 	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 	if slackAlpha != "-" {
 		log.Printf("[event:%v] Sending event to slack %v\n", eventHeader.RequestID, slackAlpha+"/"+slackBeta)
