@@ -102,7 +102,7 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing event: %v\n", err)
 	}
 
-	text := EventText(event)
+	text := MexText(event)
 	eventHeader := event.EventHeader()
 	log.Printf("[event:%v] %s", eventHeader.RequestID, text)
 
@@ -131,16 +131,24 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func EventText(e webhook.Event) (text string) {
+func MexText(e webhook.Event) (text string) {
 	header := e.EventHeader()
-	actor := fmt.Sprintf("%v at %v", header.Actor.Pretty, "<https://dnsimple.com|Awesome Company>")
+	actor := fmt.Sprintf("%v at %v", header.Actor.Pretty, MexDURL("Awesome Company", "/"))
 
 	switch event := e.(type) {
 	case *webhook.DomainCreateEvent:
-		text = fmt.Sprintf("%s created the domain <https://dnsimple.com|%s>", actor, event.Domain.Name)
+		text = fmt.Sprintf("%s created the domain %s", actor, MexDURL(event.Domain.Name, "/"))
 	default:
 		text = fmt.Sprintf("%s performed an unknown action %s", actor, event.EventName())
 	}
 
 	return
+}
+
+func MexDURL(name, url string) string {
+	return MexURL(name, dnsimpleURL+url)
+}
+
+func MexURL(name, url string) string {
+	return fmt.Sprintf("<%s|%s>", url, name)
 }
