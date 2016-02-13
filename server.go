@@ -131,10 +131,17 @@ func MexText(e webhook.Event) (text string) {
 	actor := fmt.Sprintf("%v at %v", header.Actor.Pretty, MexDURL("Awesome Company", "/"))
 
 	switch event := e.(type) {
-	case *webhook.DomainCreateEvent:
-		text = fmt.Sprintf("%s created the domain %s", actor, MexDURL(event.Domain.Name, "/"))
+	case *webhook.DomainEvent:
+		switch event.Name {
+		case "domain.create":
+			text = fmt.Sprintf("%s created the domain %s", actor, MexDURL(event.Domain.Name, "/"))
+		case "domain.delete":
+			text = fmt.Sprintf("%s deleted the domain %s", actor, MexDURL(event.Domain.Name, "/"))
+		default:
+			text = fmt.Sprintf("%s performed a %s on domain %s", event.Name, actor, MexDURL(event.Domain.Name, "/"))
+		}
 	default:
-		text = fmt.Sprintf("%s performed an unknown action %s", actor, event.EventName())
+		text = fmt.Sprintf("%s performed a %s", actor, event.EventName())
 	}
 
 	return
