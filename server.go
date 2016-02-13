@@ -133,7 +133,7 @@ func MexText(e webhook.Event) (text string) {
 
 	switch event := e.(type) {
 	case *webhook.ContactEvent:
-		contactLink := MexDURL(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmt.Sprintf("/contacts/%s", event.Contact.ID))
+		contactLink := MexDURL(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmt.Sprintf("/contacts/%d", event.Contact.ID))
 		switch event.Name {
 		case "contact.create":
 			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
