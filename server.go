@@ -129,11 +129,7 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprout
 func MexText(e webhook.Event) (text string) {
 	header := e.EventHeader()
 	account := header.Account
-	if account == nil {
-		account = &webhook.Account{Display: "Unknown"}
-		account.ID = 0
-	}
-	prefix := fmt.Sprintf("[%v] %v", MexDURL(account.Display, fmt.Sprintf("/a/%v", account.ID)), header.Actor.Pretty)
+	prefix := fmt.Sprintf("[%v] %v", MexDURL(account.Display, fmt.Sprintf("/a/%v/account", account.ID)), header.Actor.Pretty)
 
 	switch event := e.(type) {
 	case *webhook.DomainEvent:
