@@ -6,12 +6,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 	"github.com/bluele/slack"
 	"github.com/julienschmidt/httprouter"
-	"strings"
 )
 
 const what = "dnsimple-slackhooks"
