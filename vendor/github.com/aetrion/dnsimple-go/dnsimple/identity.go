@@ -1,8 +1,6 @@
 package dnsimple
 
-import ()
-
-// AuthService handles communication with several authentication identity
+// IdentityService handles communication with several authentication identity
 // methods of the DNSimple API.
 //
 // See https://developer.dnsimple.com/v2/identity/
