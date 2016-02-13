@@ -128,7 +128,7 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprout
 
 func MexText(e webhook.Event) (text string) {
 	header := e.EventHeader()
-	actor := fmt.Sprintf("%v at %v", header.Actor.Pretty, MexDURL("Awesome Company", "/"))
+	actor := fmt.Sprintf("[%v] %v", MexDURL("Awesome Company", "/a/1"), header.Actor.Pretty)
 
 	switch event := e.(type) {
 	case *webhook.DomainEvent:
