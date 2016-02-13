@@ -10,30 +10,18 @@ import (
 
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 	"github.com/bluele/slack"
+	"github.com/julienschmidt/httprouter"
 )
 
 const what = "dnsimple-slackhooks"
 const dnsimpleURL = "https://dnsimple.com"
 
 var (
-	httpPort        string
-	slackWebhookURL string
-	slackDryRun     bool
+	httpPort    string
+	slackDryRun bool
 )
 
 func init() {
-	// for now read the URL from the ENV.
-	// in the future we may probably want to be able to provide a flexible configuration.
-	slackWebhookURL = os.Getenv("SLACK_WEBHOOK_URL")
-	if slackWebhookURL == "" {
-		log.Fatalln("Slack Webhook URL is missing")
-	}
-
-	slackDryRun = true
-	if slackWebhookURL != "-" {
-		slackDryRun = false
-	}
-
 	httpPort = os.Getenv("PORT")
 	if httpPort == "" {
 		httpPort = "5000"
@@ -54,15 +42,15 @@ func main() {
 // Server represents a front-end web server.
 type Server struct {
 	// Router which handles incoming requests
-	mux *http.ServeMux
+	mux *httprouter.Router
 }
 
 // NewServer returns a new front-end web server that handles HTTP requests for the app.
 func NewServer() *Server {
-	router := http.NewServeMux()
+	router := httprouter.New()
 	server := &Server{mux: router}
-	router.HandleFunc("/", server.Root)
-	router.HandleFunc("/w", server.Webhook)
+	router.GET("/", server.Root)
+	router.POST("/services/:slackAlpha/:slackBeta/:slackGamma", server.Webhook)
 	return server
 }
 
@@ -73,14 +61,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Root is the handler for the HTTP requests to /.
 // It returns a simple uptime message useful for monitoring.
-func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
 	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), what))
 }
 
-func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 
 	if r.Method != "POST" {
@@ -104,10 +92,15 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request) {
 
 	text := MexText(event)
 	eventHeader := event.EventHeader()
+
+	// Send the webhook to Logs
 	log.Printf("[event:%v] %s", eventHeader.RequestID, text)
 
-	if !slackDryRun {
-		log.Printf("[event:%v] Sending event to slack...\n", eventHeader.RequestID)
+	// Send the webhook to Slack
+	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
+	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s/%s/%s", slackAlpha, slackBeta, slackGamma)
+	if slackAlpha != "-" {
+		log.Printf("[event:%v] Sending event to slack %v\n", eventHeader.RequestID, slackAlpha+"/"+slackBeta)
 
 		webhook := slack.NewWebHook(slackWebhookURL)
 		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{
