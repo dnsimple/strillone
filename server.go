@@ -165,7 +165,7 @@ func MexText(e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, event.Name, domainLink)
 		}
 	case *webhook.WebhookEvent:
-		webhookLink := MexDURL(event.Webhook.URL, "/webhooks/"+event.Webhook.ID)
+		webhookLink := MexDURL(event.Webhook.URL, fmt.Sprintf("/webhooks/%d", event.Webhook.ID))
 		switch event.Name {
 		case "webhook.create":
 			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
