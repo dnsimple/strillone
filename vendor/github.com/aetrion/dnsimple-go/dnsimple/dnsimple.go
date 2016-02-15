@@ -1,6 +1,5 @@
-// Package dnsimple implements a client for the DNSimple API.
-//
-// In order to use this package you will need a DNSimple account and your API Token.
+// Package dnsimple provides a client for the DNSimple API.
+// In order to use this package you will need a DNSimple account.
 package dnsimple
 
 import (
@@ -55,6 +54,7 @@ type Client struct {
 	Oauth     *OauthService
 	Registrar *RegistrarService
 	Zones     *ZonesService
+	Webhooks  *WebhooksService
 
 	// Set to true to output debugging logs during API calls
 	Debug bool
@@ -69,6 +69,7 @@ func NewClient(credentials Credentials) *Client {
 	c.Oauth = &OauthService{client: c}
 	c.Registrar = &RegistrarService{client: c}
 	c.Zones = &ZonesService{client: c}
+	c.Webhooks = &WebhooksService{client: c}
 	return c
 }
 
