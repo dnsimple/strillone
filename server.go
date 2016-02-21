@@ -129,11 +129,11 @@ func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprout
 func MexText(e webhook.Event) (text string) {
 	header := e.EventHeader()
 	account := header.Account
-	prefix := fmt.Sprintf("[%v] %v", MexDURL(account.Display, fmt.Sprintf("/a/%v/account", account.ID)), header.Actor.Pretty)
+	prefix := fmt.Sprintf("[%v] %v", MexDURL(account.Display, fmt.Sprintf("/a/%d/account", account.ID)), header.Actor.Pretty)
 
 	switch event := e.(type) {
 	case *webhook.ContactEvent:
-		contactLink := MexDURL(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmt.Sprintf("/contacts/%d", event.Contact.ID))
+		contactLink := MexDURL(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmt.Sprintf("/a/%d/contacts/%d", account.ID, event.Contact.ID))
 		switch event.Name {
 		case "contact.create":
 			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
@@ -145,7 +145,7 @@ func MexText(e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s", prefix, event.EventName())
 		}
 	case *webhook.DomainEvent:
-		domainLink := MexDURL(event.Domain.Name, "/domains/"+event.Domain.Name)
+		domainLink := MexDURL(event.Domain.Name, fmt.Sprintf("/a/%d/domains/%s", account.ID, event.Domain.Name))
 		switch event.Name {
 		case "domain.auto_renewal_enable":
 			text = fmt.Sprintf("%s enabled auto-renewal for the domain %s", prefix, domainLink)
@@ -167,7 +167,7 @@ func MexText(e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, event.Name, domainLink)
 		}
 	case *webhook.WebhookEvent:
-		webhookLink := MexDURL(event.Webhook.URL, fmt.Sprintf("/webhooks/%d", event.Webhook.ID))
+		webhookLink := MexDURL(event.Webhook.URL, fmt.Sprintf("/a/%d/webhooks/%d", account.ID, event.Webhook.ID))
 		switch event.Name {
 		case "webhook.create":
 			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
