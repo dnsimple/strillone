@@ -155,6 +155,8 @@ func MexText(e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s created the domain %s", prefix, domainLink)
 		case "domain.delete":
 			text = fmt.Sprintf("%s deleted the domain %s", prefix, domainLink)
+		case "domain.renew":
+			text = fmt.Sprintf("%s renewed the domain %s", prefix, domainLink)
 		case "domain.resolution_enable":
 			text = fmt.Sprintf("%s enabled resolution for the domain %s", prefix, domainLink)
 		case "domain.resolution_disable":
