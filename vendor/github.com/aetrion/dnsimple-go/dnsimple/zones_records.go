@@ -4,31 +4,31 @@ import (
 	"fmt"
 )
 
-// ZoneRecordResponse represents a response from an API method that returns a ZoneRecord struct.
-type ZoneRecordResponse struct {
-	Response
-	Data *Record `json:"data"`
-}
-
-// ZoneRecordsResponse represents a response from an API method that returns a collection of ZoneRecord struct.
-type ZoneRecordsResponse struct {
-	Response
-	Data []Record `json:"data"`
-}
-
-// Record represents a DNS record in DNSimple.
-type Record struct {
+// ZoneRecord represents a DNS record in DNSimple.
+type ZoneRecord struct {
 	ID           int    `json:"id,omitempty"`
 	ZoneID       string `json:"zone_id,omitempty"`
 	ParentID     int    `json:"parent_id,omitempty"`
 	Type         string `json:"type,omitempty"`
-	Name         string `json:"name,omitempty"`
+	Name         string `json:"name"`
 	Content      string `json:"content,omitempty"`
 	TTL          int    `json:"ttl,omitempty"`
 	Priority     int    `json:"priority,omitempty"`
 	SystemRecord bool   `json:"system_record,omitempty"`
 	CreatedAt    string `json:"created_at,omitempty"`
 	UpdatedAt    string `json:"updated_at,omitempty"`
+}
+
+// ZoneRecordResponse represents a response from an API method that returns a ZoneRecord struct.
+type ZoneRecordResponse struct {
+	Response
+	Data *ZoneRecord `json:"data"`
+}
+
+// ZoneRecordsResponse represents a response from an API method that returns a collection of ZoneRecord struct.
+type ZoneRecordsResponse struct {
+	Response
+	Data []ZoneRecord `json:"data"`
 }
 
 func zoneRecordPath(accountID string, zoneID string, recordID int) string {
@@ -44,9 +44,14 @@ func zoneRecordPath(accountID string, zoneID string, recordID int) string {
 // ListRecords lists the zone records for a zone.
 //
 // See https://developer.dnsimple.com/v2/zones/#list
-func (s *ZonesService) ListRecords(accountID string, zoneID string) (*ZoneRecordsResponse, error) {
+func (s *ZonesService) ListRecords(accountID string, zoneID string, options *ListOptions) (*ZoneRecordsResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, 0))
 	recordsResponse := &ZoneRecordsResponse{}
+
+	path, err := addURLQueryOptions(path, options)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := s.client.get(path, recordsResponse)
 	if err != nil {
@@ -60,7 +65,7 @@ func (s *ZonesService) ListRecords(accountID string, zoneID string) (*ZoneRecord
 // CreateRecord creates a zone record.
 //
 // See https://developer.dnsimple.com/v2/zones/#create
-func (s *ZonesService) CreateRecord(accountID string, zoneID string, recordAttributes Record) (*ZoneRecordResponse, error) {
+func (s *ZonesService) CreateRecord(accountID string, zoneID string, recordAttributes ZoneRecord) (*ZoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, 0))
 	recordResponse := &ZoneRecordResponse{}
 
@@ -92,7 +97,7 @@ func (s *ZonesService) GetRecord(accountID string, zoneID string, recordID int) 
 // UpdateRecord updates a zone record.
 //
 // See https://developer.dnsimple.com/v2/zones/#update
-func (s *ZonesService) UpdateRecord(accountID string, zoneID string, recordID int, recordAttributes Record) (*ZoneRecordResponse, error) {
+func (s *ZonesService) UpdateRecord(accountID string, zoneID string, recordID int, recordAttributes ZoneRecord) (*ZoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, recordID))
 	recordResponse := &ZoneRecordResponse{}
 

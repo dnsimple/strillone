@@ -12,18 +12,6 @@ type DomainsService struct {
 	client *Client
 }
 
-// DomainResponse represents a response from an API method that returns a Domain struct.
-type DomainResponse struct {
-	Response
-	Data *Domain `json:"data"`
-}
-
-// DomainsResponse represents a response from an API method that returns a collection of Domain struct.
-type DomainsResponse struct {
-	Response
-	Data []Domain `json:"data"`
-}
-
 // Domain represents a domain in DNSimple.
 type Domain struct {
 	ID           int    `json:"id,omitempty"`
@@ -38,6 +26,18 @@ type Domain struct {
 	ExpiresOn    string `json:"expires_on,omitempty"`
 	CreatedAt    string `json:"created_at,omitempty"`
 	UpdatedAt    string `json:"updated_at,omitempty"`
+}
+
+// DomainResponse represents a response from an API method that returns a Domain struct.
+type DomainResponse struct {
+	Response
+	Data *Domain `json:"data"`
+}
+
+// DomainsResponse represents a response from an API method that returns a collection of Domain struct.
+type DomainsResponse struct {
+	Response
+	Data []Domain `json:"data"`
 }
 
 // domainRequest represents a generic wrapper for a domain request,
@@ -66,9 +66,14 @@ func domainPath(accountID string, domain interface{}) string {
 // ListDomains lists the domains for an account.
 //
 // See https://developer.dnsimple.com/v2/domains/#list
-func (s *DomainsService) ListDomains(accountID string) (*DomainsResponse, error) {
+func (s *DomainsService) ListDomains(accountID string, options *ListOptions) (*DomainsResponse, error) {
 	path := versioned(domainPath(accountID, nil))
 	domainsResponse := &DomainsResponse{}
+
+	path, err := addURLQueryOptions(path, options)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := s.client.get(path, domainsResponse)
 	if err != nil {

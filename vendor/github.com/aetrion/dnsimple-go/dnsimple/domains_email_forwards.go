@@ -4,6 +4,16 @@ import (
 	"fmt"
 )
 
+// EmailForward represents an email forward in DNSimple.
+type EmailForward struct {
+	ID        int    `json:"id,omitempty"`
+	DomainID  int    `json:"domain_id,omitempty"`
+	From      string `json:"from,omitempty"`
+	To        string `json:"to,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
+}
+
 // EmailForwardResponse represents a response from an API method that returns an EmailForward struct.
 type EmailForwardResponse struct {
 	Response
@@ -14,16 +24,6 @@ type EmailForwardResponse struct {
 type EmailForwardsResponse struct {
 	Response
 	Data []EmailForward `json:"data"`
-}
-
-// EmailForward represents an email forward in DNSimple.
-type EmailForward struct {
-	ID        int    `json:"id,omitempty"`
-	DomainID  int    `json:"domain_id,omitempty"`
-	From      string `json:"from,omitempty"`
-	To        string `json:"to,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
 func emailForwardPath(accountID string, domain interface{}, forwardID int) string {
@@ -39,9 +39,14 @@ func emailForwardPath(accountID string, domain interface{}, forwardID int) strin
 // ListEmailForwards lists the email forwards for a domain.
 //
 // See https://developer.dnsimple.com/v2/domains/email-forwards/#list
-func (s *DomainsService) ListEmailForwards(accountID string, domain interface{}) (*EmailForwardsResponse, error) {
+func (s *DomainsService) ListEmailForwards(accountID string, domain interface{}, options *ListOptions) (*EmailForwardsResponse, error) {
 	path := versioned(emailForwardPath(accountID, domain, 0))
 	forwardsResponse := &EmailForwardsResponse{}
+
+	path, err := addURLQueryOptions(path, options)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := s.client.get(path, forwardsResponse)
 	if err != nil {

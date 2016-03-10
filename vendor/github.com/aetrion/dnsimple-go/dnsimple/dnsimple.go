@@ -9,6 +9,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -19,7 +21,7 @@ const (
 	// This is a pro-forma convention given that Go dependencies
 	// tends to be fetched directly from the repo.
 	// It is also used in the user-agent identify the client.
-	libraryVersion = "0.5.0-dev"
+	libraryVersion = "0.10.0-beta"
 
 	// defaultBaseURL to the DNSimple production API.
 	defaultBaseURL = "https://api.dnsimple.com"
@@ -53,11 +55,22 @@ type Client struct {
 	Domains   *DomainsService
 	Oauth     *OauthService
 	Registrar *RegistrarService
-	Zones     *ZonesService
+	Tlds      *TldsService
 	Webhooks  *WebhooksService
+	Zones     *ZonesService
 
 	// Set to true to output debugging logs during API calls
 	Debug bool
+}
+
+// ListOptions contains the common options you can pass to a List method
+// in order to control parameters such as paginations and page number.
+type ListOptions struct {
+	// The page to return
+	Page int `url:"page,omitempty"`
+
+	// The number of entries to return per page
+	PerPage int `url:"per_page,omitempty"`
 }
 
 // NewClient returns a new DNSimple API client using the given credentials.
@@ -68,8 +81,9 @@ func NewClient(credentials Credentials) *Client {
 	c.Domains = &DomainsService{client: c}
 	c.Oauth = &OauthService{client: c}
 	c.Registrar = &RegistrarService{client: c}
-	c.Zones = &ZonesService{client: c}
+	c.Tlds = &TldsService{client: c}
 	c.Webhooks = &WebhooksService{client: c}
+	c.Zones = &ZonesService{client: c}
 	return c
 }
 
@@ -95,7 +109,9 @@ func (c *Client) NewRequest(method, path string, payload interface{}) (*http.Req
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", c.UserAgent)
-	req.Header.Add(c.Credentials.HttpHeader())
+	for key, value := range c.Credentials.Headers() {
+		req.Header.Add(key, value)
+	}
 
 	return req, nil
 }
@@ -190,7 +206,11 @@ func (c *Client) Do(req *http.Request, payload, obj interface{}) (*http.Response
 
 // A Response represents an API response.
 type Response struct {
-	HttpResponse *http.Response // HTTP response
+	// HTTP response
+	HttpResponse *http.Response
+
+	// If the response is paginated, the Pagination will store them.
+	Pagination *Pagination `json:"pagination"`
 }
 
 // RateLimit returns the maximum amount of requests this account can send in an hour.
@@ -211,10 +231,20 @@ func (r *Response) RateLimitReset() time.Time {
 	return time.Unix(value, 0)
 }
 
+// If the response is paginated, Pagination represents the pagination information.
+type Pagination struct {
+	CurrentPage  int `json:"current_page"`
+	PerPage      int `json:"per_page"`
+	TotalPages   int `json:"total_pages"`
+	TotalEntries int `json:"total_entries"`
+}
+
 // An ErrorResponse represents an API response that generated an error.
 type ErrorResponse struct {
 	Response
-	Message string `json:"message"` // human-readable message
+
+	// human-readable message
+	Message string `json:"message"`
 }
 
 // Error implements the error interface.
@@ -243,21 +273,88 @@ func CheckResponse(resp *http.Response) error {
 	return errorResponse
 }
 
-// Date custom type.
-type Date struct {
-	time.Time
+// see encoding/json
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
 }
 
-// UnmarshalJSON handles the deserialization of the custom Date type.
-func (d *Date) UnmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return fmt.Errorf("date should be a string, got %s", data)
+// addOptions adds the parameters in opt as URL query parameters to s.  opt
+// must be a struct whose fields may contain "url" tags.
+func addURLQueryOptions(path string, options interface{}) (string, error) {
+	val := reflect.ValueOf(options)
+	qso := map[string]string{}
+
+	// options is a pointer
+	// return if the value of the pointer is nil,
+	// otherwise replace the pointer with the value.
+	if val.Kind() == reflect.Ptr {
+		if val.IsNil() {
+			return path, nil
+		}
+		val = val.Elem()
 	}
-	t, err := time.Parse("2006-01-02", s)
+
+	// extract all the options from the struct
+	typ := val.Type()
+	for i := 0; i < val.NumField(); i++ {
+		sf := typ.Field(i)
+		sv := val.Field(i)
+
+		tag := sf.Tag.Get("url")
+
+		// The field has a different tag
+		if tag == "" {
+			continue
+		}
+
+		// The field is ignored with `url:"-"`
+		if tag == "-" {
+			continue
+		}
+
+		splits := strings.Split(tag, ",")
+		name, opts := splits[0], splits[1:]
+
+		if optionsContains(opts, "omitempty") && isEmptyValue(sv) {
+			continue
+		}
+
+		qso[name] = fmt.Sprint(sv.Interface())
+	}
+
+	// append the options to the URL
+	u, err := url.Parse(path)
 	if err != nil {
-		return fmt.Errorf("invalid date: %v", err)
+		return path, err
 	}
-	d.Time = t
-	return nil
+	qs := u.Query()
+	for k, v := range qso {
+		qs.Add(k, v)
+	}
+	u.RawQuery = qs.Encode()
+
+	return u.String(), nil
+}
+
+func optionsContains(options []string, option string) bool {
+	for _, s := range options {
+		if s == option {
+			return true
+		}
+	}
+	return false
 }

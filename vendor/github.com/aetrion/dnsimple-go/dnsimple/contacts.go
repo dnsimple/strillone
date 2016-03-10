@@ -12,18 +12,6 @@ type ContactsService struct {
 	client *Client
 }
 
-// ContactResponse represents a response from an API method that returns a Contact struct.
-type ContactResponse struct {
-	Response
-	Data *Contact `json:"data"`
-}
-
-// ContactsResponse represents a response from an API method that returns a collection of Contact struct.
-type ContactsResponse struct {
-	Response
-	Data []Contact `json:"data"`
-}
-
 // Contact represents a Contact in DNSimple.
 type Contact struct {
 	ID            int    `json:"id,omitempty"`
@@ -53,12 +41,29 @@ func contactPath(accountID string, contact interface{}) string {
 	return fmt.Sprintf("/%v/contacts", accountID)
 }
 
+// ContactResponse represents a response from an API method that returns a Contact struct.
+type ContactResponse struct {
+	Response
+	Data *Contact `json:"data"`
+}
+
+// ContactsResponse represents a response from an API method that returns a collection of Contact struct.
+type ContactsResponse struct {
+	Response
+	Data []Contact `json:"data"`
+}
+
 // ListContacts list the contacts for an account.
 //
 // See https://developer.dnsimple.com/v2/contacts/#list
-func (s *ContactsService) ListContacts(accountID string) (*ContactsResponse, error) {
+func (s *ContactsService) ListContacts(accountID string, options *ListOptions) (*ContactsResponse, error) {
 	path := versioned(contactPath(accountID, nil))
 	contactsResponse := &ContactsResponse{}
+
+	path, err := addURLQueryOptions(path, options)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := s.client.get(path, contactsResponse)
 	if err != nil {

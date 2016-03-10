@@ -12,6 +12,16 @@ type ZonesService struct {
 	client *Client
 }
 
+// Zone represents a Zone in DNSimple.
+type Zone struct {
+	ID        int    `json:"id,omitempty"`
+	AccountID int    `json:"account_id,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Reverse   bool   `json:"reverse,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
+}
+
 // ZoneResponse represents a response from an API method that returns a Zone struct.
 type ZoneResponse struct {
 	Response
@@ -24,22 +34,17 @@ type ZonesResponse struct {
 	Data []Zone `json:"data"`
 }
 
-// Zone represents a Zone in DNSimple.
-type Zone struct {
-	ID        int    `json:"id,omitempty"`
-	AccountID int    `json:"account_id,omitempty"`
-	Name      string `json:"name,omitempty"`
-	Reverse   bool   `json:"reverse,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
-}
-
 // ListZones the zones for an account.
 //
 // See https://developer.dnsimple.com/v2/zones/#list
-func (s *ZonesService) ListZones(accountID string) (*ZonesResponse, error) {
+func (s *ZonesService) ListZones(accountID string, options *ListOptions) (*ZonesResponse, error) {
 	path := versioned(fmt.Sprintf("/%v/zones", accountID))
 	zonesResponse := &ZonesResponse{}
+
+	path, err := addURLQueryOptions(path, options)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := s.client.get(path, zonesResponse)
 	if err != nil {
