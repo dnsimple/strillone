@@ -166,6 +166,17 @@ func MexText(e webhook.Event) (text string) {
 		default:
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, event.Name, domainLink)
 		}
+	case *webhook.ZoneRecordEvent:
+		zoneRecordDisplay := fmt.Sprintf("%s %s.%s %s", event.ZoneRecord.Type, event.ZoneRecord.Name, event.ZoneRecord.ZoneID, event.ZoneRecord.Content)
+		zoneRecordLink := MexDURL(zoneRecordDisplay, fmt.Sprintf("/a/%d/domains/%s/records/%d", account.ID, event.ZoneRecord.ZoneID, event.ZoneRecord.ID))
+		switch event.Name {
+		case "record.create":
+			text = fmt.Sprintf("%s created the record %s", prefix, zoneRecordLink)
+		case "record.update":
+			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
+		case "record.delete":
+			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
+		}
 	case *webhook.WebhookEvent:
 		webhookLink := MexDURL(event.Webhook.URL, fmt.Sprintf("/a/%d/webhooks/%d", account.ID, event.Webhook.ID))
 		switch event.Name {
@@ -173,8 +184,6 @@ func MexText(e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
 		case "webhook.delete":
 			text = fmt.Sprintf("%s deleted the webhook %s", prefix, webhookLink)
-		default:
-			text = fmt.Sprintf("%s performed %s on webhook %s", prefix, event.Name, webhookLink)
 		}
 	default:
 		text = fmt.Sprintf("%s performed %s", prefix, event.EventName())
