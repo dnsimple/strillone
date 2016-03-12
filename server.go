@@ -173,7 +173,7 @@ func MexText(e webhook.Event) (text string) {
 		case "record.create":
 			text = fmt.Sprintf("%s created the record %s", prefix, zoneRecordLink)
 		case "record.update":
-			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
+			text = fmt.Sprintf("%s updated the record %s", prefix, zoneRecordLink)
 		case "record.delete":
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
 		}
