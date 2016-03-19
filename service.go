@@ -8,6 +8,8 @@ import (
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 )
 
+// MessagingService represents a service where the event is published.
+// Some examples are Slack, HipChat, and Campfire.
 type MessagingService interface {
 	FormatLink(name, url string) string
 	PostEvent(event webhook.Event) (error)

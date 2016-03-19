@@ -6,6 +6,7 @@ import (
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 )
 
+// Message formats the event into a text message suitable for being sent to a messaging service.
 func Message(s MessagingService, e webhook.Event) (text string) {
 	header := e.EventHeader()
 	account := header.Account

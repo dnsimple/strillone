@@ -67,6 +67,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), what))
 }
 
+// Slack handles a request to publish a webhook to a Slack channel.
 func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 
