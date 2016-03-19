@@ -51,7 +51,7 @@ func NewServer() *Server {
 	router := httprouter.New()
 	server := &Server{mux: router}
 	router.GET("/", server.Root)
-	router.POST("/services/:slackAlpha/:slackBeta/:slackGamma", server.Webhook)
+	router.POST("/slack/:slackAlpha/:slackBeta/:slackGamma", server.Slack)
 	return server
 }
 
@@ -69,7 +69,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), what))
 }
 
-func (s *Server) Webhook(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
 	log.Printf("%s %s\n", r.Method, strings.Replace(r.URL.RequestURI(), slackGamma, slackGamma[0:6]+"...", 1))
 
