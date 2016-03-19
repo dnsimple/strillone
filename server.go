@@ -12,7 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-const what = "dnsimple-slackhooks"
+const what = "dnsimple-vox"
 const dnsimpleURL = "https://dnsimple.com"
 
 var (

@@ -1,1 +1,1 @@
-web: dnsimple-slackhooks -p $PORT
+web: dnsimple-vox -p $PORT

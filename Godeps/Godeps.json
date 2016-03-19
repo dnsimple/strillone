@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/weppos/dnsimple-slackhooks",
+	"ImportPath": "github.com/aetrion/dnsimple-vox",
 	"GoVersion": "go1.6",
 	"Packages": [
 		"./..."

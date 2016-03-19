@@ -1,0 +1,16 @@
+{
+  name: "DNSimple Vox Webhook publisher",
+  description: "A service to publish the events generated from a DNSimple account to a messaging service, using the DNSimple webhooks.",
+  repository: "https://github.com/aetrion/dnsimple-vox",
+  keywords: [
+    "dnsimple",
+    "slack",
+    "webhooks"
+  ],
+  env: {
+    GO15VENDOREXPERIMENT: {
+      description: "Configure the /vendor folder support for Go 1.5/1.6.",
+      value: "1"
+    }
+  }
+}
