@@ -92,7 +92,8 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		log.Printf("Error parsing event: %v\n", err)
 	}
 
-	text := MexText(event)
+	service := &SlackService{}
+	text := Message(service, event)
 	eventHeader := event.EventHeader()
 
 	// Send the webhook to Logs
@@ -114,7 +115,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 					Fields: []*slack.AttachmentField{
 						&slack.AttachmentField{
 							Title: event.EventName(),
-							Value: text,
+							Value: service.FormatMessage(text),
 						},
 					},
 				},
@@ -126,14 +127,14 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	}
 }
 
-func MexText(e webhook.Event) (text string) {
+func Message(s MessagingService, e webhook.Event) (text string) {
 	header := e.EventHeader()
 	account := header.Account
-	prefix := fmt.Sprintf("[%v] %v", MexDURL(account.Display, fmt.Sprintf("/a/%d/account", account.ID)), header.Actor.Pretty)
+	prefix := fmt.Sprintf("[%v] %v", s.FormatLink(account.Display, fmtURL("/a/%d/account", account.ID)), header.Actor.Pretty)
 
 	switch event := e.(type) {
 	case *webhook.ContactEvent:
-		contactLink := MexDURL(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmt.Sprintf("/a/%d/contacts/%d", account.ID, event.Contact.ID))
+		contactLink := s.FormatLink(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmtURL("/a/%d/contacts/%d", account.ID, event.Contact.ID))
 		switch event.Name {
 		case "contact.create":
 			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
@@ -145,7 +146,7 @@ func MexText(e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s", prefix, event.EventName())
 		}
 	case *webhook.DomainEvent:
-		domainLink := MexDURL(event.Domain.Name, fmt.Sprintf("/a/%d/domains/%s", account.ID, event.Domain.Name))
+		domainLink := s.FormatLink(event.Domain.Name, fmtURL("/a/%d/domains/%s", account.ID, event.Domain.Name))
 		switch event.Name {
 		case "domain.auto_renewal_enable":
 			text = fmt.Sprintf("%s enabled auto-renewal for the domain %s", prefix, domainLink)
@@ -168,7 +169,7 @@ func MexText(e webhook.Event) (text string) {
 		}
 	case *webhook.ZoneRecordEvent:
 		zoneRecordDisplay := fmt.Sprintf("%s %s.%s %s", event.ZoneRecord.Type, event.ZoneRecord.Name, event.ZoneRecord.ZoneID, event.ZoneRecord.Content)
-		zoneRecordLink := MexDURL(zoneRecordDisplay, fmt.Sprintf("/a/%d/domains/%s/records/%d", account.ID, event.ZoneRecord.ZoneID, event.ZoneRecord.ID))
+		zoneRecordLink := s.FormatLink(zoneRecordDisplay, fmtURL("/a/%d/domains/%s/records/%d", account.ID, event.ZoneRecord.ZoneID, event.ZoneRecord.ID))
 		switch event.Name {
 		case "record.create":
 			text = fmt.Sprintf("%s created the record %s", prefix, zoneRecordLink)
@@ -178,7 +179,7 @@ func MexText(e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
 		}
 	case *webhook.WebhookEvent:
-		webhookLink := MexDURL(event.Webhook.URL, fmt.Sprintf("/a/%d/webhooks/%d", account.ID, event.Webhook.ID))
+		webhookLink := s.FormatLink(event.Webhook.URL, fmtURL("/a/%d/webhooks/%d", account.ID, event.Webhook.ID))
 		switch event.Name {
 		case "webhook.create":
 			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
@@ -190,12 +191,4 @@ func MexText(e webhook.Event) (text string) {
 	}
 
 	return
-}
-
-func MexDURL(name, url string) string {
-	return MexURL(name, dnsimpleURL+url)
-}
-
-func MexURL(name, url string) string {
-	return fmt.Sprintf("<%s|%s>", url, name)
 }
