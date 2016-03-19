@@ -35,14 +35,22 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s created the domain %s", prefix, domainLink)
 		case "domain.delete":
 			text = fmt.Sprintf("%s deleted the domain %s", prefix, domainLink)
+		case "domain.register":
+			text = fmt.Sprintf("%s registered the domain %s", prefix, domainLink)
 		case "domain.renew":
 			text = fmt.Sprintf("%s renewed the domain %s", prefix, domainLink)
+		case "domain.delegation_change":
+			text = fmt.Sprintf("%s changed the delegation for the domain %s", prefix, domainLink)
+		case "domain.registrant_change":
+			text = fmt.Sprintf("%s changed the registrant for the domain %s", prefix, domainLink)
 		case "domain.resolution_enable":
 			text = fmt.Sprintf("%s enabled resolution for the domain %s", prefix, domainLink)
 		case "domain.resolution_disable":
 			text = fmt.Sprintf("%s disabled resolution for the domain %s", prefix, domainLink)
 		case "domain.token_reset":
 			text = fmt.Sprintf("%s reset the token for the domain %s", prefix, domainLink)
+		case "domain.transfer":
+			text = fmt.Sprintf("%s transferred the domain %s", prefix, domainLink)
 		default:
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, event.Name, domainLink)
 		}
