@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
@@ -69,8 +68,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 }
 
 func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
-	log.Printf("%s %s\n", r.Method, strings.Replace(r.URL.RequestURI(), slackGamma, slackGamma[0:6]+"...", 1))
+	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -89,6 +87,9 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		log.Printf("Error parsing event: %v\n", err)
 	}
 
-	service := &SlackService{Token: fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)}
+	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
+	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
+
+	service := &SlackService{Token: slackToken}
 	service.PostEvent(event)
 }

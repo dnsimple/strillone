@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/bluele/slack"
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
@@ -43,7 +42,7 @@ func (s *SlackService) PostEvent(event webhook.Event) error {
 	}
 
 	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/%s", s.Token)
-	log.Printf("[event:%v] Sending event to slack %v\n", eventID, s.Token[:strings.LastIndex(s.Token, "/")])
+	log.Printf("[event:%v] Sending event to slack %v\n", eventID, slackWebhookURL)
 
 	webhook := slack.NewWebHook(slackWebhookURL)
 	webhookErr := webhook.PostMessage(&slack.WebHookPostPayload{
