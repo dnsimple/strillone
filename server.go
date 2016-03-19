@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
-	"github.com/bluele/slack"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -78,8 +77,6 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		return
 	}
 
-	var err error
-
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -92,37 +89,6 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		log.Printf("Error parsing event: %v\n", err)
 	}
 
-	service := &SlackService{}
-	text := Message(service, event)
-	eventHeader := event.EventHeader()
-
-	// Send the webhook to Logs
-	log.Printf("[event:%v] %s", eventHeader.RequestID, text)
-
-	// Send the webhook to Slack
-	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s/%s/%s", slackAlpha, slackBeta, slackGamma)
-	if slackAlpha != "-" {
-		log.Printf("[event:%v] Sending event to slack %v\n", eventHeader.RequestID, slackAlpha+"/"+slackBeta)
-
-		webhook := slack.NewWebHook(slackWebhookURL)
-		slackErr := webhook.PostMessage(&slack.WebHookPostPayload{
-			Username: "DNSimple",
-			IconUrl:  "http://cl.ly/2t0u2Q380N3y/trusty.png",
-			Attachments: []*slack.Attachment{
-				&slack.Attachment{
-					Fallback: text,
-					Color:    "good",
-					Fields: []*slack.AttachmentField{
-						&slack.AttachmentField{
-							Title: event.EventName(),
-							Value: service.FormatMessage(text),
-						},
-					},
-				},
-			},
-		})
-		if slackErr != nil {
-			log.Printf("[event:%v] Error sending to slack: %v\n", eventHeader.RequestID, err)
-		}
-	}
+	service := &SlackService{Token: fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)}
+	service.PostEvent(event)
 }

@@ -2,15 +2,21 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"strings"
+
+	"github.com/bluele/slack"
+	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 )
 
 type MessagingService interface {
 	FormatLink(name, url string) string
-	FormatMessage(message string) string
+	PostEvent(event webhook.Event) (error)
 }
 
 // SlackService represents the Slack message service.
 type SlackService struct {
+	Token string
 }
 
 // Implements MessagingService
@@ -21,4 +27,44 @@ func (s *SlackService) FormatLink(name, url string) string {
 // Implements MessagingService
 func (s *SlackService) FormatMessage(message string) string {
 	return message
+}
+
+// Implements MessagingService
+func (s *SlackService) PostEvent(event webhook.Event) error {
+	eventID := eventRequestID(event)
+	text := Message(s, event)
+
+	// Send the webhook to Logs
+	log.Printf("[event:%v] %s", eventID, text)
+
+	// Don't send to Slack
+	if s.Token[0] == '-' {
+		return nil
+	}
+
+	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/%s", s.Token)
+	log.Printf("[event:%v] Sending event to slack %v\n", eventID, s.Token[:strings.LastIndex(s.Token, "/")])
+
+	webhook := slack.NewWebHook(slackWebhookURL)
+	webhookErr := webhook.PostMessage(&slack.WebHookPostPayload{
+		Username: "DNSimple",
+		IconUrl:  "http://cl.ly/2t0u2Q380N3y/trusty.png",
+		Attachments: []*slack.Attachment{
+			&slack.Attachment{
+				Fallback: text,
+				Color:    "good",
+				Fields: []*slack.AttachmentField{
+					&slack.AttachmentField{
+						Title: event.EventName(),
+						Value: text,
+					},
+				},
+			},
+		},
+	})
+	if webhookErr != nil {
+		log.Printf("[event:%v] Error sending to slack: %v\n", eventID, webhookErr)
+	}
+
+	return webhookErr
 }

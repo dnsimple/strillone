@@ -72,6 +72,10 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 	return
 }
 
+func eventRequestID(event webhook.Event) string {
+	return event.EventHeader().RequestID
+}
+
 func fmtURL(path string, a ...interface{}) string {
 	return fmt.Sprintf(dnsimpleURL+path, a...)
 }
