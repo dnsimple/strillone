@@ -42,7 +42,7 @@ First, you need to [setup an incoming webhook](https://my.slack.com/services/new
 
 Once created, Slack will give you a _Webhook URL_ that looks like the following one:
 
-![](http://cl.ly/2y183w1d0G0B/Screen%20Shot%202016-03-19%20at%2019.39.18.png)
+![](http://cl.ly/1X0a0G2p1H2u/Screen%20Shot%202016-03-19%20at%2019.41.04.png)
 
 To generate the Vox webhook URL, simply replace the initial fixed part of the Slack webhook URL with `https://your-vox-domain.com/slack`.
 
