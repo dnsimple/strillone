@@ -41,7 +41,7 @@ func (s *SlackService) PostEvent(event webhook.Event) error {
 		return nil
 	}
 
-	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/%s", s.Token)
+	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s", s.Token)
 	log.Printf("[event:%v] Sending event to slack %v\n", eventID, slackWebhookURL)
 
 	webhook := slack.NewWebHook(slackWebhookURL)
