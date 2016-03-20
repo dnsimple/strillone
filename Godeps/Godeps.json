@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/aetrion/dnsimple-vox",
+	"ImportPath": "github.com/aetrion/strillone",
 	"GoVersion": "go1.6",
 	"Packages": [
 		"./..."

@@ -1,1 +1,1 @@
-web: dnsimple-vox -p $PORT
+web: strillone -p $PORT
