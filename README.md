@@ -36,7 +36,7 @@ Once you configured the publisher and generated the webhook URL, use the URL to 
 
 ## Slack configuration
 
-Vox integrates with Slack using the []Slack Incoming Webhook](https://api.slack.com/incoming-webhooks) feature.
+Vox integrates with Slack using the [Slack Incoming Webhook](https://api.slack.com/incoming-webhooks) feature.
 
 First, you need to [setup an incoming webhook](https://my.slack.com/services/new/incoming-webhook/). Select the Slack channel and follow the instructions.
 
