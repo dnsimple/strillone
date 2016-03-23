@@ -1,16 +1,16 @@
 {
-  name: "Strillone: DNSimple Webhook publisher",
-  description: "A service to publish the events generated from a DNSimple account to a messaging service, using the DNSimple webhooks.",
-  repository: "https://github.com/aetrion/strillone",
-  keywords: [
+  "name": "Strillone: DNSimple Webhook publisher",
+  "description": "A service to publish the events generated from a DNSimple account to a messaging service, using the DNSimple webhooks.",
+  "repository": "https://github.com/aetrion/strillone",
+  "keywords": [
     "dnsimple",
     "slack",
     "webhooks"
   ],
-  env: {
-    GO15VENDOREXPERIMENT: {
-      description: "Configure the /vendor folder support for Go 1.5/1.6.",
-      value: "1"
+  "env": {
+    "GO15VENDOREXPERIMENT": {
+      "description": "Configure the /vendor folder support for Go 1.5/1.6.",
+      "value": "1"
     }
   }
 }
