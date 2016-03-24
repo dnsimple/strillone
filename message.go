@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 )
@@ -41,9 +42,11 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 		case "domain.renew":
 			text = fmt.Sprintf("%s renewed the domain %s", prefix, domainLink)
 		case "domain.delegation_change":
-			text = fmt.Sprintf("%s changed the delegation for the domain %s", prefix, domainLink)
+			servers := strings.Join(*event.Delegation, ", ")
+			text = fmt.Sprintf("%s changed the delegation for the domain %s to %s", prefix, domainLink, servers)
 		case "domain.registrant_change":
-			text = fmt.Sprintf("%s changed the registrant for the domain %s", prefix, domainLink)
+			registrant := event.Registrant.Label
+			text = fmt.Sprintf("%s changed the registrant for the domain %s to %s", prefix, domainLink, registrant)
 		case "domain.resolution_enable":
 			text = fmt.Sprintf("%s enabled resolution for the domain %s", prefix, domainLink)
 		case "domain.resolution_disable":

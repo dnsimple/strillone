@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bluele/slack"
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
+	"github.com/bluele/slack"
 )
 
 // MessagingService represents a service where the event is published.
 // Some examples are Slack, HipChat, and Campfire.
 type MessagingService interface {
 	FormatLink(name, url string) string
-	PostEvent(event webhook.Event) (error)
+	PostEvent(event webhook.Event) error
 }
 
 // SlackService represents the Slack message service.
