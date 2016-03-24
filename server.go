@@ -12,7 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-const what = "dnsimple-vox"
+const what = "dnsimple-strillone"
 const dnsimpleURL = "https://dnsimple.com"
 
 var (
