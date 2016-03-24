@@ -36,7 +36,7 @@ func main() {
 
 	server := NewServer()
 
-	log.Printf("%s listening on %s...\n", what, httpPort)
+	log.Printf("%s listening on %s...\n", What, httpPort)
 	if err := http.ListenAndServe(":"+httpPort, server); err != nil {
 		log.Panic(err)
 	}
@@ -68,7 +68,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
-	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), what))
+	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), What))
 }
 
 // Slack handles a request to publish a webhook to a Slack channel.
