@@ -12,10 +12,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-const what = "dnsimple-vox"
+const what = "dnsimple-strillone"
 const dnsimpleURL = "https://dnsimple.com"
 
 var (
+	version string
+
 	httpPort    string
 	slackDryRun bool
 )
@@ -28,7 +30,7 @@ func init() {
 }
 
 func main() {
-	log.Printf("Starting %s...\n", what)
+	log.Printf("Starting %s %s\n", what, version)
 
 	server := NewServer()
 
