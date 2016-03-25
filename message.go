@@ -62,11 +62,11 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 		zoneRecordDisplay := fmt.Sprintf("%s %s.%s %s", event.ZoneRecord.Type, event.ZoneRecord.Name, event.ZoneRecord.ZoneID, event.ZoneRecord.Content)
 		zoneRecordLink := s.FormatLink(zoneRecordDisplay, fmtURL("/a/%d/domains/%s/records/%d", account.ID, event.ZoneRecord.ZoneID, event.ZoneRecord.ID))
 		switch event.Name {
-		case "record.create":
+		case "zone_record.create":
 			text = fmt.Sprintf("%s created the record %s", prefix, zoneRecordLink)
-		case "record.update":
+		case "zone_record.update":
 			text = fmt.Sprintf("%s updated the record %s", prefix, zoneRecordLink)
-		case "record.delete":
+		case "zone_record.delete":
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
 		}
 	case *webhook.WebhookEvent:
