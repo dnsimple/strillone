@@ -5,6 +5,13 @@ _Strillone_ is a service to publish the events generated from a DNSimple account
 ![](http://cl.ly/1N3G0L3o1C1H/slack-integrations-dnsimple.png)
 
 
+The word [strillone](https://en.wiktionary.org/wiki/strillone) (literally _someone who shouts a lot_, in practice the equivalent of _newspaper boy_) comes from Italian and it refers to the newspaper sellers in the street, who were used to yell the titles in homepage to catch the attention and sell more newspapers.
+
+![](http://cl.ly/0S2s3o2L1Z0p/strillone.jpg)
+
+<small>Photo: [New York Media](http://nymag.com/daily/intelligencer/2013/06/fed-is-having-a-1936-moment.html)</small>
+
+
 ## Usage
 
 #### Deploy the application
