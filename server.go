@@ -12,15 +12,16 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// Program name and version
-// Version is replaced at compilation time
+// What represents the program name
 var What = "dnsimple-strillone"
+
+// Version is replaced at compilation time
 var Version string
 
 const dnsimpleURL = "https://dnsimple.com"
 
 var (
-	httpPort    string
+	httpPort string
 )
 
 func init() {

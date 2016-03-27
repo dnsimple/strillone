@@ -20,17 +20,17 @@ type SlackService struct {
 	Token string
 }
 
-// Implements MessagingService
+// FormatLink implements MessagingService
 func (s *SlackService) FormatLink(name, url string) string {
 	return fmt.Sprintf("<%s|%s>", url, name)
 }
 
-// Implements MessagingService
+// FormatMessage implements MessagingService
 func (s *SlackService) FormatMessage(message string) string {
 	return message
 }
 
-// Implements MessagingService
+// PostEvent implements MessagingService
 func (s *SlackService) PostEvent(event webhook.Event) (string, error) {
 	eventID := eventRequestID(event)
 	text := Message(s, event)
