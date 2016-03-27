@@ -25,7 +25,7 @@ Make sure the app is properly deployed. If you access the homepage, you should s
 
 Configure the target of the messages. We currently support the following publishers:
 
-- Slack
+- [Slack](#slack-configuration)
 
 See below for the specific configurations.
 
