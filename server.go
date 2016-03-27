@@ -21,7 +21,6 @@ const dnsimpleURL = "https://dnsimple.com"
 
 var (
 	httpPort    string
-	slackDryRun bool
 )
 
 func init() {
@@ -96,5 +95,11 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 
 	service := &SlackService{Token: slackToken}
-	service.PostEvent(event)
+	text, err := service.PostEvent(event)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Internal Error: %v\n", err)
+	}
+
+	fmt.Fprintln(w, text)
 }

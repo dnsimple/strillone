@@ -12,7 +12,7 @@ import (
 // Some examples are Slack, HipChat, and Campfire.
 type MessagingService interface {
 	FormatLink(name, url string) string
-	PostEvent(event webhook.Event) error
+	PostEvent(event webhook.Event) (string, error)
 }
 
 // SlackService represents the Slack message service.
@@ -31,7 +31,7 @@ func (s *SlackService) FormatMessage(message string) string {
 }
 
 // Implements MessagingService
-func (s *SlackService) PostEvent(event webhook.Event) error {
+func (s *SlackService) PostEvent(event webhook.Event) (string, error) {
 	eventID := eventRequestID(event)
 	text := Message(s, event)
 
@@ -40,7 +40,7 @@ func (s *SlackService) PostEvent(event webhook.Event) error {
 
 	// Don't send to Slack
 	if s.Token[0] == '-' {
-		return nil
+		return "", nil
 	}
 
 	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s", s.Token)
@@ -67,5 +67,5 @@ func (s *SlackService) PostEvent(event webhook.Event) error {
 		log.Printf("[event:%v] Error sending to slack: %v\n", eventID, webhookErr)
 	}
 
-	return webhookErr
+	return text, webhookErr
 }
