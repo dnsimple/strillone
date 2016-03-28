@@ -18,7 +18,7 @@ You can use the following button to deploy the service to Heroku.
 Make sure the app is properly deployed. If you access the homepage, you should see a JSON response like the following one:
 
 ```json
-{"ping":"1458412047","what":"dnsimple-slackhooks"}
+{"ping":"1458412047","what":"dnsimple-strillone"}
 ```
 
 #### Configure the Publishers
@@ -59,7 +59,7 @@ This is the URL you have to enter in DNSimple when creating the webhook.
 
 ## About the name
 
-The word [strillone](https://en.wiktionary.org/wiki/strillone) (literally _someone who shouts a lot_, in practice the equivalent of _newspaper boy_) comes from Italian and it refers to the newspaper sellers in the street, who were used to yell the titles in homepage to catch the attention and sell more newspapers.
+The word [strillone](https://en.wiktionary.org/wiki/strillone) (literally _someone who shouts a lot_, in practice the equivalent of _newspaper boy_) comes from Italian and it refers to the newspaper sellers in the street, who were used to yell the titles in the front page to catch the attention and sell more newspapers.
 
 ![](http://cl.ly/0S2s3o2L1Z0p/strillone.jpg)
 
