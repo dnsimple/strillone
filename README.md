@@ -11,7 +11,7 @@ _Strillone_ is a service to publish the events generated from a DNSimple account
 
 You can use the following button to deploy the service to Heroku.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/aetrion/dnsimple-vox)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/aetrion/strillone)
 
 #### Check the deploy
 
@@ -36,7 +36,7 @@ Once you configured the publisher and generated the webhook URL, use the URL to 
 
 ## Slack configuration
 
-Vox integrates with Slack using the [Slack Incoming Webhook](https://api.slack.com/incoming-webhooks) feature.
+Strillone integrates with Slack using the [Slack Incoming Webhook](https://api.slack.com/incoming-webhooks) feature.
 
 First, you need to [setup an incoming webhook](https://my.slack.com/services/new/incoming-webhook/). Select the Slack channel and follow the instructions.
 
@@ -46,12 +46,12 @@ Once created, Slack will give you a _Webhook URL_ that looks like the following 
 
 ![](http://cl.ly/1X0a0G2p1H2u/Screen%20Shot%202016-03-19%20at%2019.41.04.png)
 
-To generate the Vox webhook URL, simply replace the initial fixed part of the Slack webhook URL with `https://your-vox-domain.com/slack`.
+To generate the Strillone webhook URL, simply replace the initial fixed part of the Slack webhook URL with `https://your-strillone-domain.com/slack`.
 
-For instance, if your Heroku app is `https://happy-panda.herokuapp.com/` and the Slack webhook URL is `https://hooks.slack.com/services/XXXXX/YYYYY/ZZZZZZZZZZ`, then your Vox webhook URL for this specific integration will be:
+For instance, if your Heroku app is `https://happy-panda.herokuapp.com/` and the Slack webhook URL is `https://hooks.slack.com/services/XXXXX/YYYYY/ZZZZZZZZZZ`, then your Strillone webhook URL for this specific integration will be:
 
 ```
-https://your-vox-domain.com/slack/XXXXX/YYYYY/ZZZZZZZZZZ
+https://your-strillone-domain.com/slack/XXXXX/YYYYY/ZZZZZZZZZZ
 ```
 
 This is the URL you have to enter in DNSimple when creating the webhook.
