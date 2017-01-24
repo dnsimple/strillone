@@ -10,6 +10,7 @@ import (
 
 	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 	"github.com/julienschmidt/httprouter"
+	"github.com/wunderlist/ttlcache"
 )
 
 // What represents the program name
@@ -18,10 +19,14 @@ var What = "dnsimple-strillone"
 // Version is replaced at compilation time
 var Version string
 
-const dnsimpleURL = "https://dnsimple.com"
+const (
+	dnsimpleURL = "https://dnsimple.com"
+	cacheTTL    = 300
+)
 
 var (
-	httpPort string
+	httpPort        string
+	processedEvents *ttlcache.Cache
 )
 
 func init() {
@@ -29,6 +34,8 @@ func init() {
 	if httpPort == "" {
 		httpPort = "5000"
 	}
+
+	processedEvents = ttlcache.NewCache(time.Second * cacheTTL)
 }
 
 func main() {
@@ -84,12 +91,22 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Printf("Error parsing body: %v\n", err)
+		return
 	}
 
 	event, err := webhook.Parse(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Printf("Error parsing event: %v\n", err)
+		return
+	}
+
+	// Check if the event was already processed
+	_, cacheExists := processedEvents.Get(event.EventHeader().RequestID)
+	if cacheExists {
+		log.Printf("Event %v already processed, skipping\n", event.EventHeader().RequestID)
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 
 	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
@@ -100,7 +117,10 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Internal Error: %v\n", err)
+		return
 	}
+
+	processedEvents.Set(event.EventHeader().RequestID, event.EventHeader().RequestID)
 
 	fmt.Fprintln(w, text)
 }
