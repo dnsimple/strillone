@@ -20,8 +20,9 @@ var What = "dnsimple-strillone"
 var Version string
 
 const (
-	dnsimpleURL = "https://dnsimple.com"
-	cacheTTL    = 300
+	dnsimpleURL            = "https://dnsimple.com"
+	cacheTTL               = 300
+	headerProcessingStatus = "X-Processing-Status"
 )
 
 var (
@@ -105,7 +106,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	_, cacheExists := processedEvents.Get(event.EventHeader().RequestID)
 	if cacheExists {
 		log.Printf("Skipping event %v as already processed\n", event.EventHeader().RequestID)
-		w.Header().Set("X-Status", "skipped;already-processed")
+		w.Header().Set(headerProcessingStatus, "skipped;already-processed")
 		w.WriteHeader(http.StatusOK)
 		return
 	}

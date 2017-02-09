@@ -60,8 +60,8 @@ func TestSlackTwice(t *testing.T) {
 	if want := http.StatusOK; want != response.Code {
 		t.Errorf("POST /slack expected HTTP %v, got %v", want, response.Code)
 	}
-	if want, got := "", response.Header().Get("X-Status"); want != got {
-		t.Errorf("POST /slack X-Status expected empty, got %v", got)
+	if want, got := "", response.Header().Get(headerProcessingStatus); want != got {
+		t.Errorf("POST /slack X-Processing-Status expected empty, got %v", got)
 	}
 
 	requestDuplicate, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
@@ -72,7 +72,7 @@ func TestSlackTwice(t *testing.T) {
 	if want := http.StatusOK; want != responseDuplicate.Code {
 		t.Errorf("POST /slack (duplicate) expected HTTP %v, got %v", want, responseDuplicate.Code)
 	}
-	if want, got := "skipped;already-processed", responseDuplicate.Header().Get("X-Status"); want != got {
-		t.Errorf("POST /slack (duplicate) X-Status expected %v, got %v", want, got)
+	if want, got := "skipped;already-processed", responseDuplicate.Header().Get(headerProcessingStatus); want != got {
+		t.Errorf("POST /slack (duplicate) X-Processing-Status expected %v, got %v", want, got)
 	}
 }
