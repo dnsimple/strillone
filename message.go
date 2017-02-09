@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
 )
 
 // Message formats the event into a text message suitable for being sent to a messaging service.

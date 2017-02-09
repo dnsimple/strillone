@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/aetrion/strillone",
+	"ImportPath": "github.com/dnsimple/strillone",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v75",
 	"Packages": [
@@ -7,17 +7,31 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/aetrion/dnsimple-go/dnsimple",
-			"Rev": "2d8cc54b4923b16dfea2d472e29b4314f6ca7fd2"
-		},
-		{
 			"ImportPath": "github.com/bluele/slack",
 			"Rev": "6d00f93158acefc3a0f605c171d1baa80ba86b73"
+		},
+		{
+			"ImportPath": "github.com/dnsimple/dnsimple-go/dnsimple",
+			"Comment": "v0.14.0-6-g87251e1",
+			"Rev": "87251e1663f72ebd64ed963995ebd75139a1ed5e"
+		},
+		{
+			"ImportPath": "github.com/dnsimple/dnsimple-go/dnsimple/webhook",
+			"Comment": "v0.14.0-6-g87251e1",
+			"Rev": "87251e1663f72ebd64ed963995ebd75139a1ed5e"
+		},
+		{
+			"ImportPath": "github.com/google/go-querystring/query",
+			"Rev": "ec0a78e0f4db229b7897be36596a8944230b857a"
 		},
 		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
 			"Comment": "v1.1-16-gabb0dc9",
 			"Rev": "abb0dc9f755ff0a9d818db28d9d8b9810066e2b5"
+		},
+		{
+			"ImportPath": "github.com/wunderlist/ttlcache",
+			"Rev": "fa8f18d5e019f6bdf076153e60dccf2c6fc7ccf5"
 		}
 	]
 }

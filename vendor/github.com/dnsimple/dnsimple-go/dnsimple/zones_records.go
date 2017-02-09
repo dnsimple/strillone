@@ -6,17 +6,42 @@ import (
 
 // ZoneRecord represents a DNS record in DNSimple.
 type ZoneRecord struct {
-	ID           int    `json:"id,omitempty"`
-	ZoneID       string `json:"zone_id,omitempty"`
-	ParentID     int    `json:"parent_id,omitempty"`
-	Type         string `json:"type,omitempty"`
-	Name         string `json:"name"`
-	Content      string `json:"content,omitempty"`
-	TTL          int    `json:"ttl,omitempty"`
-	Priority     int    `json:"priority,omitempty"`
-	SystemRecord bool   `json:"system_record,omitempty"`
-	CreatedAt    string `json:"created_at,omitempty"`
-	UpdatedAt    string `json:"updated_at,omitempty"`
+	ID           int      `json:"id,omitempty"`
+	ZoneID       string   `json:"zone_id,omitempty"`
+	ParentID     int      `json:"parent_id,omitempty"`
+	Type         string   `json:"type,omitempty"`
+	Name         string   `json:"name"`
+	Content      string   `json:"content,omitempty"`
+	TTL          int      `json:"ttl,omitempty"`
+	Priority     int      `json:"priority,omitempty"`
+	SystemRecord bool     `json:"system_record,omitempty"`
+	Regions      []string `json:"regions,omitempty"`
+	CreatedAt    string   `json:"created_at,omitempty"`
+	UpdatedAt    string   `json:"updated_at,omitempty"`
+}
+
+func zoneRecordPath(accountID string, zoneID string, recordID int) (path string) {
+	path = fmt.Sprintf("/%v/zones/%v/records", accountID, zoneID)
+	if recordID != 0 {
+		path += fmt.Sprintf("/%d", recordID)
+	}
+	return
+}
+
+// ZoneRecordListOptions specifies the optional parameters you can provide
+// to customize the ZonesService.ListZoneRecords method.
+type ZoneRecordListOptions struct {
+	// Select records where the name matches given string.
+	Name string `url:"name,omitempty"`
+
+	// Select records where the name contains given string.
+	NameLike string `url:"name_like,omitempty"`
+
+	// Select records of given type.
+	// Eg. TXT, A, NS.
+	Type string `url:"record_type,omitempty"`
+
+	ListOptions
 }
 
 // ZoneRecordResponse represents a response from an API method that returns a ZoneRecord struct.
@@ -31,20 +56,10 @@ type ZoneRecordsResponse struct {
 	Data []ZoneRecord `json:"data"`
 }
 
-func zoneRecordPath(accountID string, zoneID string, recordID int) string {
-	path := fmt.Sprintf("/%v/zones/%v/records", accountID, zoneID)
-
-	if recordID != 0 {
-		path += fmt.Sprintf("/%d", recordID)
-	}
-
-	return path
-}
-
 // ListRecords lists the zone records for a zone.
 //
 // See https://developer.dnsimple.com/v2/zones/#list
-func (s *ZonesService) ListRecords(accountID string, zoneID string, options *ListOptions) (*ZoneRecordsResponse, error) {
+func (s *ZonesService) ListRecords(accountID string, zoneID string, options *ZoneRecordListOptions) (*ZoneRecordsResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, 0))
 	recordsResponse := &ZoneRecordsResponse{}
 
@@ -100,8 +115,8 @@ func (s *ZonesService) GetRecord(accountID string, zoneID string, recordID int) 
 func (s *ZonesService) UpdateRecord(accountID string, zoneID string, recordID int, recordAttributes ZoneRecord) (*ZoneRecordResponse, error) {
 	path := versioned(zoneRecordPath(accountID, zoneID, recordID))
 	recordResponse := &ZoneRecordResponse{}
-
 	resp, err := s.client.patch(path, recordAttributes, recordResponse)
+
 	if err != nil {
 		return nil, err
 	}

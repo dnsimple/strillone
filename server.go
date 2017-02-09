@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
 	"github.com/julienschmidt/httprouter"
 	"github.com/wunderlist/ttlcache"
 )

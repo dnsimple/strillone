@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/aetrion/dnsimple-go/dnsimple/webhook"
 	"github.com/bluele/slack"
+	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
 )
 
 // MessagingService represents a service where the event is published.
