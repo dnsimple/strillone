@@ -50,17 +50,29 @@ func TestSlack(t *testing.T) {
 }
 
 func TestSlackTwice(t *testing.T) {
-	payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "hosted", "token": "domain-token", "account_id": 1010, "auto_renew": false, "created_at": "2016-02-07T14:46:29.142Z", "expires_on": null, "updated_at": "2016-02-07T14:46:29.142Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": null}}, "actor": {"id": "1", "entity": "user", "pretty": "example@example.com"}, "account": {"id": 1010, "display": "User", "identifier": "user"}, "name": "domain.create", "api_version": "v2", "request_identifier": "096bfc29-2bf0-40c6-991b-f03b1f8521f1"}`
+	payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "hosted", "token": "domain-token", "account_id": 1010, "auto_renew": false, "created_at": "2016-02-07T14:46:29.142Z", "expires_on": null, "updated_at": "2016-02-07T14:46:29.142Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": null}}, "actor": {"id": "1", "entity": "user", "pretty": "example@example.com"}, "account": {"id": 1010, "display": "User", "identifier": "user"}, "name": "domain.create", "api_version": "v2", "request_identifier": "096bfc29-2bf0-40c6-0000-f03b1f8521f1"}`
 
 	request, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
 	response := httptest.NewRecorder()
 
 	server.Slack(response, request, httprouter.Params{})
 
-	server.Slack(response, request, httprouter.Params{})
-
 	if want := http.StatusOK; want != response.Code {
 		t.Errorf("POST /slack expected HTTP %v, got %v", want, response.Code)
 	}
+	if want, got := "", response.Header().Get("X-Status"); want != got {
+		t.Errorf("POST /slack X-Status expected empty, got %v", got)
+	}
 
+	requestDuplicate, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
+	responseDuplicate := httptest.NewRecorder()
+
+	server.Slack(responseDuplicate, requestDuplicate, httprouter.Params{})
+
+	if want := http.StatusOK; want != responseDuplicate.Code {
+		t.Errorf("POST /slack (duplicate) expected HTTP %v, got %v", want, responseDuplicate.Code)
+	}
+	if want, got := "skipped;already-processed", responseDuplicate.Header().Get("X-Status"); want != got {
+		t.Errorf("POST /slack (duplicate) X-Status expected %v, got %v", want, got)
+	}
 }

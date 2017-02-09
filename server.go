@@ -104,7 +104,8 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	// Check if the event was already processed
 	_, cacheExists := processedEvents.Get(event.EventHeader().RequestID)
 	if cacheExists {
-		log.Printf("Event %v already processed, skipping\n", event.EventHeader().RequestID)
+		log.Printf("Skipping event %v as already processed\n", event.EventHeader().RequestID)
+		w.Header().Set("X-Status", "skipped;already-processed")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
