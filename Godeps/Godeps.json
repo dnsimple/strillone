@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/dnsimple/strillone",
-	"GoVersion": "go1.7",
-	"GodepVersion": "v75",
+	"GoVersion": "go1.11",
+	"GodepVersion": "v80",
 	"Packages": [
 		"./..."
 	],
@@ -12,13 +12,13 @@
 		},
 		{
 			"ImportPath": "github.com/dnsimple/dnsimple-go/dnsimple",
-			"Comment": "v0.14.0-6-g87251e1",
-			"Rev": "87251e1663f72ebd64ed963995ebd75139a1ed5e"
+			"Comment": "v0.20.0",
+			"Rev": "f1325bedd5c7a52da7831b781886f1a5e8a5d644"
 		},
 		{
 			"ImportPath": "github.com/dnsimple/dnsimple-go/dnsimple/webhook",
-			"Comment": "v0.14.0-6-g87251e1",
-			"Rev": "87251e1663f72ebd64ed963995ebd75139a1ed5e"
+			"Comment": "v0.20.0",
+			"Rev": "f1325bedd5c7a52da7831b781886f1a5e8a5d644"
 		},
 		{
 			"ImportPath": "github.com/google/go-querystring/query",

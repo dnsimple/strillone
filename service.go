@@ -51,11 +51,11 @@ func (s *SlackService) PostEvent(event webhook.Event) (string, error) {
 		Username: "DNSimple",
 		IconUrl:  "http://cl.ly/2t0u2Q380N3y/trusty.png",
 		Attachments: []*slack.Attachment{
-			&slack.Attachment{
+			{
 				Fallback: text,
 				Color:    "good",
 				Fields: []*slack.AttachmentField{
-					&slack.AttachmentField{
+					{
 						Title: event.EventName(),
 						Value: text,
 					},
