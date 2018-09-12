@@ -7,9 +7,14 @@ import (
 	"net/url"
 )
 
+var httpClient *http.Client
+
+func init() {
+	httpClient = &http.Client{}
+}
+
 func (sl *Slack) request(req *http.Request) ([]byte, error) {
-	cl := newHttpClient()
-	res, err := cl.Do(req)
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +35,7 @@ func (sl *Slack) GetRequest(endpoint string, uv *url.Values) ([]byte, error) {
 func (sl *Slack) PostRequest(endpoint string, uv *url.Values, body *bytes.Buffer) ([]byte, error) {
 	ul := apiBaseUrl + endpoint
 	req, err := http.NewRequest("POST", ul, body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +45,4 @@ func (sl *Slack) PostRequest(endpoint string, uv *url.Values, body *bytes.Buffer
 
 func (sl *Slack) DoRequest(req *http.Request) ([]byte, error) {
 	return sl.request(req)
-}
-
-func newHttpClient() *http.Client {
-	return &http.Client{}
 }

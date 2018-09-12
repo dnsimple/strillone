@@ -25,6 +25,10 @@ type Attachment struct {
 	ImageURL string `json:"image_url,omitempty"`
 	ThumbURL string `json:"thumb_url,omitempty"`
 
+	Footer     string `json:"footer,omitempty"`
+	FooterIcon string `json:"footer_icon,omitempty"`
+	TimeStamp  int64  `json:"ts,omitempty"`
+
 	Fields     []*AttachmentField `json:"fields,omitempty"`
 	MarkdownIn []string           `json:"mrkdwn_in,omitempty"`
 }

@@ -11,6 +11,7 @@ channels.join | Joins a channel, creating it if needed. | [#link](https://github
 channels.list | Lists all channels in a Slack team. | [#link](https://github.com/bluele/slack/blob/master/examples/channels_list.go)
 chat.postMessage | Sends a message to a channel. | [#link](https://github.com/bluele/slack/blob/master/examples/chat_post_message.go)
 files.upload | Upload an image/file | [#link](https://github.com/bluele/slack/blob/master/examples/upload_file.go)
+files.info | Retrieves the information about an uploaded file | [#link](https://github.com/bluele/slack/blob/master/examples/upload_file_info.go)
 groups.invite | Invites a user to a private group. | [#link](https://github.com/bluele/slack/blob/master/examples/groups_invite.go)
 groups.create | Creates a private group. | [#link](https://github.com/bluele/slack/blob/master/examples/groups_create.go)
 groups.list | Lists private groups that the calling user has access to. | [#link](https://github.com/bluele/slack/blob/master/examples/groups_list.go)
@@ -34,11 +35,7 @@ const (
 
 func main() {
   api := slack.New(token)
-  channel, err := api.FindChannelByName(channelName)
-  if err != nil {
-    panic(err)
-  }
-  err = api.ChatPostMessage(channel.Id, "Hello, world!", nil)
+  err := api.ChatPostMessage(channelName, "Hello, world!", nil)
   if err != nil {
     panic(err)
   }
