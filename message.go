@@ -9,7 +9,7 @@ import (
 
 // Message formats the event into a text message suitable for being sent to a messaging service.
 func Message(s MessagingService, e webhook.Event) (text string) {
-	header := e.EventHeader()
+	header := e.GetEventHeader()
 	account := header.Account
 	prefix := fmt.Sprintf("[%v] %v", s.FormatLink(account.Display, fmtURL("/a/%d/account", account.ID)), header.Actor.Pretty)
 
@@ -24,7 +24,7 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 		case "contact.delete":
 			text = fmt.Sprintf("%s deleted the contact %s", prefix, contactLink)
 		default:
-			text = fmt.Sprintf("%s performed %s", prefix, event.EventName())
+			text = fmt.Sprintf("%s performed %s", prefix, event.GetEventName())
 		}
 	case *webhook.DomainEvent:
 		domainLink := s.FormatLink(event.Domain.Name, fmtURL("/a/%d/domains/%s", account.ID, event.Domain.Name))
@@ -78,14 +78,14 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s deleted the webhook %s", prefix, webhookLink)
 		}
 	default:
-		text = fmt.Sprintf("%s performed %s", prefix, event.EventName())
+		text = fmt.Sprintf("%s performed %s", prefix, event.GetEventName())
 	}
 
 	return
 }
 
 func eventRequestID(event webhook.Event) string {
-	return event.EventHeader().RequestID
+	return event.GetEventHeader().RequestID
 }
 
 func fmtURL(path string, a ...interface{}) string {

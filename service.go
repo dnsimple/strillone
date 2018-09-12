@@ -56,7 +56,7 @@ func (s *SlackService) PostEvent(event webhook.Event) (string, error) {
 				Color:    "good",
 				Fields: []*slack.AttachmentField{
 					{
-						Title: event.EventName(),
+						Title: event.GetEventName(),
 						Value: text,
 					},
 				},
