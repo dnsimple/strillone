@@ -1,0 +1,10 @@
+github.com/bluele/slack v0.0.0-20180528010058-b4b4d354a079 h1:dm7wU6Dyf+rVGryOAB8/J/I+pYT/9AdG8dstD3kdMWU=
+github.com/bluele/slack v0.0.0-20180528010058-b4b4d354a079/go.mod h1:W679Ri2W93VLD8cVpEY/zLH1ow4zhJcCyjzrKxfM3QM=
+github.com/dnsimple/dnsimple-go v0.22.0 h1:McLDPeZcbrwRBHPge121vZxGnWNFYVX63P2ZAspl4hk=
+github.com/dnsimple/dnsimple-go v0.22.0/go.mod h1:0FYu4qVNv/UcfZPNwa9zi68IkggJu3TIwM54D7rhmI4=
+github.com/google/go-querystring v0.0.0-20130914073520-ec0a78e0f4db h1:iBPx90ALt87WmB3OOIXLoOqCCJUhXhUVULlx+bSjB/o=
+github.com/google/go-querystring v0.0.0-20130914073520-ec0a78e0f4db/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
+github.com/julienschmidt/httprouter v0.0.0-20160122152510-abb0dc9f755f h1:dMfnsWB3/7dZPekprWLBgsydsXaevYWi5TiYuQPg2rE=
+github.com/julienschmidt/httprouter v0.0.0-20160122152510-abb0dc9f755f/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
+github.com/wunderlist/ttlcache v0.0.0-20140611003616-fa8f18d5e019 h1:fF6uurOlG4uMMr7P/reKrtgu+vfMZixMEx74YWDWaU4=
+github.com/wunderlist/ttlcache v0.0.0-20140611003616-fa8f18d5e019/go.mod h1:oWWm4B/FRe5AKcl+/5tz6YaA4HWpzzt5hSKM5+LSYgM=
