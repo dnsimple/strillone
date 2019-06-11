@@ -13,7 +13,7 @@ _Strillone_ is a service to publish the events generated from a DNSimple account
 
 You can use the following button to deploy the service to Heroku.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/aetrion/strillone)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/dnsimple/strillone)
 
 #### Check the deploy
 
@@ -70,4 +70,4 @@ Photo: [New York Media](http://nymag.com/daily/intelligencer/2013/06/fed-is-havi
 
 ## License
 
-Copyright (c) 2016-2018 Aetrion, LLC. This is Free Software distributed under the MIT license.
+Copyright (c) 2016-2019 DNSimple Corporation. This is Free Software distributed under the MIT license.
