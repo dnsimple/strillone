@@ -14,8 +14,19 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 	prefix := fmt.Sprintf("[%v] %v", s.FormatLink(account.Display, fmtURL("/a/%d/account", account.ID)), header.Actor.Pretty)
 
 	switch event := e.(type) {
+	case *webhook.CertificateEvent:
+		certificate := event.Certificate
+		certificateDisplay := certificate.CommonName
+		certificateLink := s.FormatLink(certificateDisplay, fmtURL("/a/%d/domains/%d/certificates/%d", account.ID, certificate.DomainID, certificate.ID))
+		switch event.Name {
+		case "certificate.remove_private_key":
+			text = fmt.Sprintf("%s deleted the private key for the certificate %s", prefix, certificateLink)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, event.GetEventName())
+		}
 	case *webhook.ContactEvent:
-		contactLink := s.FormatLink(fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName), fmtURL("/a/%d/contacts/%d", account.ID, event.Contact.ID))
+		contactDisplay := fmt.Sprintf("%s %s", event.Contact.FirstName, event.Contact.LastName)
+		contactLink := s.FormatLink(contactDisplay, fmtURL("/a/%d/contacts/%d", account.ID, event.Contact.ID))
 		switch event.Name {
 		case "contact.create":
 			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
@@ -27,7 +38,8 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s", prefix, event.GetEventName())
 		}
 	case *webhook.DomainEvent:
-		domainLink := s.FormatLink(event.Domain.Name, fmtURL("/a/%d/domains/%s", account.ID, event.Domain.Name))
+		domainDisplay := event.Domain.Name
+		domainLink := s.FormatLink(domainDisplay, fmtURL("/a/%d/domains/%s", account.ID, event.Domain.Name))
 		switch event.Name {
 		case "domain.auto_renewal_enable":
 			text = fmt.Sprintf("%s enabled auto-renewal for the domain %s", prefix, domainLink)
@@ -70,7 +82,8 @@ func Message(s MessagingService, e webhook.Event) (text string) {
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
 		}
 	case *webhook.WebhookEvent:
-		webhookLink := s.FormatLink(event.Webhook.URL, fmtURL("/a/%d/webhooks/%d", account.ID, event.Webhook.ID))
+		webhookDisplay := event.Webhook.URL
+		webhookLink := s.FormatLink(webhookDisplay, fmtURL("/a/%d/webhooks/%d", account.ID, event.Webhook.ID))
 		switch event.Name {
 		case "webhook.create":
 			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
