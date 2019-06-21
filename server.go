@@ -95,7 +95,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		return
 	}
 
-	event, err := webhook.Parse(data)
+	event, err := webhook.ParseEvent(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Printf("Error parsing event: %v\n", err)
@@ -103,9 +103,9 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	}
 
 	// Check if the event was already processed
-	_, cacheExists := processedEvents.Get(event.GetEventHeader().RequestID)
+	_, cacheExists := processedEvents.Get(event.RequestID)
 	if cacheExists {
-		log.Printf("Skipping event %v as already processed\n", event.GetEventHeader().RequestID)
+		log.Printf("Skipping event %v as already processed\n", event.RequestID)
 		w.Header().Set(headerProcessingStatus, "skipped;already-processed")
 		w.WriteHeader(http.StatusOK)
 		return
@@ -122,7 +122,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		return
 	}
 
-	processedEvents.Set(event.GetEventHeader().RequestID, event.GetEventHeader().RequestID)
+	processedEvents.Set(event.RequestID, event.RequestID)
 
 	fmt.Fprintln(w, text)
 }

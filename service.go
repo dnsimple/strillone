@@ -12,7 +12,7 @@ import (
 // Some examples are Slack, HipChat, and Campfire.
 type MessagingService interface {
 	FormatLink(name, url string) string
-	PostEvent(event webhook.Event) (string, error)
+	PostEvent(event *webhook.Event) (string, error)
 }
 
 // SlackService represents the Slack message service.
@@ -31,7 +31,7 @@ func (s *SlackService) FormatMessage(message string) string {
 }
 
 // PostEvent implements MessagingService
-func (s *SlackService) PostEvent(event webhook.Event) (string, error) {
+func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 	eventID := eventRequestID(event)
 	text := Message(s, event)
 
@@ -56,7 +56,7 @@ func (s *SlackService) PostEvent(event webhook.Event) (string, error) {
 				Color:    "good",
 				Fields: []*slack.AttachmentField{
 					{
-						Title: event.GetEventName(),
+						Title: event.Name,
 						Value: text,
 					},
 				},
