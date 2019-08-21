@@ -1,4 +1,8 @@
+// +heroku goVersion go1.12.8
+
 module github.com/dnsimple/strillone
+
+go 1.12
 
 require (
 	github.com/bluele/slack v0.0.0-20180528010058-b4b4d354a079
