@@ -1,11 +1,10 @@
-package main
+package strillone
 
 import (
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
@@ -27,40 +26,22 @@ var (
 	Version string
 )
 
-var (
-	processedEvents *ttlcache.Cache
-)
-
-func init() {
-	processedEvents = ttlcache.NewCache(time.Second * cacheTTL)
-}
-
-func main() {
-	log.Printf("Starting %s/%s\n", Program, Version)
-
-	httpPort := os.Getenv("PORT")
-	if httpPort == "" {
-		httpPort = "4000"
-	}
-
-	server := NewServer()
-
-	log.Printf("%s listening on %s...\n", Program, httpPort)
-	if err := http.ListenAndServe(":"+httpPort, server); err != nil {
-		log.Panic(err)
-	}
-}
-
 // Server represents a front-end web server.
 type Server struct {
-	// Router which handles incoming requests
-	mux *httprouter.Router
+	mux          *httprouter.Router
+	webhookCache *ttlcache.Cache
 }
 
 // NewServer returns a new front-end web server that handles HTTP requests for the app.
 func NewServer() *Server {
+	cache := ttlcache.NewCache(cacheTTL * time.Second)
+
 	router := httprouter.New()
-	server := &Server{mux: router}
+	server := &Server{
+		mux:          router,
+		webhookCache: cache,
+	}
+
 	router.GET("/", server.Root)
 	router.POST("/slack/:slackAlpha/:slackBeta/:slackGamma", server.Slack)
 	return server
@@ -104,7 +85,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	}
 
 	// Check if the event was already processed
-	_, cacheExists := processedEvents.Get(event.RequestID)
+	_, cacheExists := s.webhookCache.Get(event.RequestID)
 	if cacheExists {
 		log.Printf("Skipping event %v as already processed\n", event.RequestID)
 		w.Header().Set(headerProcessingStatus, "skipped;already-processed")
@@ -123,7 +104,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		return
 	}
 
-	processedEvents.Set(event.RequestID, event.RequestID)
+	s.webhookCache.Set(event.RequestID, "1")
 
 	fmt.Fprintln(w, text)
 }
