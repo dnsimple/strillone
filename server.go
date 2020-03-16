@@ -13,12 +13,6 @@ import (
 	"github.com/wunderlist/ttlcache"
 )
 
-// What represents the program name
-var What = "dnsimple-strillone"
-
-// Version is replaced at compilation time
-var Version string
-
 const (
 	dnsimpleURL            = "https://dnsimple.com"
 	cacheTTL               = 300
@@ -26,25 +20,32 @@ const (
 )
 
 var (
-	httpPort        string
+	// Program name
+	Program = "dnsimple-strillone"
+
+	// Version is replaced at compilation time
+	Version string
+)
+
+var (
 	processedEvents *ttlcache.Cache
 )
 
 func init() {
-	httpPort = os.Getenv("PORT")
-	if httpPort == "" {
-		httpPort = "5000"
-	}
-
 	processedEvents = ttlcache.NewCache(time.Second * cacheTTL)
 }
 
 func main() {
-	log.Printf("Starting %s %s\n", What, Version)
+	log.Printf("Starting %s/%s\n", Program, Version)
+
+	httpPort := os.Getenv("PORT")
+	if httpPort == "" {
+		httpPort = "4000"
+	}
 
 	server := NewServer()
 
-	log.Printf("%s listening on %s...\n", What, httpPort)
+	log.Printf("%s listening on %s...\n", Program, httpPort)
 	if err := http.ListenAndServe(":"+httpPort, server); err != nil {
 		log.Panic(err)
 	}
@@ -76,7 +77,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
-	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), What))
+	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), Program))
 }
 
 // Slack handles a request to publish a webhook to a Slack channel.

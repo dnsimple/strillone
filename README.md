@@ -70,4 +70,4 @@ Photo: [New York Media](http://nymag.com/daily/intelligencer/2013/06/fed-is-havi
 
 ## License
 
-Copyright (c) 2016-2019 DNSimple Corporation. This is Free Software distributed under the MIT license.
+Copyright (c) 2016-2020 DNSimple Corporation. This is Free Software distributed under the MIT license.

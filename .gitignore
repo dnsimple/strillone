@@ -1,0 +1,5 @@
+# Secrets
+/.env
+
+# Build
+/bin/strillone

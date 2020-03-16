@@ -1,1 +1,1 @@
-web: strillone -p $PORT
+web: bin/strillone
