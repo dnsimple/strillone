@@ -6,4 +6,4 @@ update_configs:
     default_labels:
       - "task"
       - "dependencies"
-      - "backlog-backend"
+      - "backlog-dependencies"
