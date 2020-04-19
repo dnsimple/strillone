@@ -1,12 +1,8 @@
 language: go
 
 go:
-  - "1.13.7"
+  - "1.13.8"
   - tip
-
-env:
-  global:
-    - GO111MODULE=on
 
 matrix:
   allow_failures:
