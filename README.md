@@ -4,7 +4,7 @@ _Strillone_ is a service to publish the events generated from a DNSimple account
 
 [![Build Status](https://travis-ci.org/dnsimple/strillone.svg)](https://travis-ci.org/dnsimple/strillone)
 
-![](http://cl.ly/1N3G0L3o1C1H/slack-integrations-dnsimple.png)
+![](img-example.png)
 
 
 ## Usage
@@ -42,11 +42,11 @@ Strillone integrates with Slack using the [Slack Incoming Webhook](https://api.s
 
 First, you need to [setup an incoming webhook](https://my.slack.com/services/new/incoming-webhook/). Select the Slack channel and follow the instructions.
 
-![](http://cl.ly/161a1V3m1n3b/Screen%20Shot%202016-03-19%20at%2019.39.18.png)
+![](img-config-1.png)
 
 Once created, Slack will give you a _Webhook URL_ that looks like the following one:
 
-![](http://cl.ly/1X0a0G2p1H2u/Screen%20Shot%202016-03-19%20at%2019.41.04.png)
+![](img-config-2.png)
 
 To generate the Strillone webhook URL, simply replace the initial fixed part of the Slack webhook URL with `https://your-strillone-domain.com/slack`.
 
@@ -63,7 +63,7 @@ This is the URL you have to enter in DNSimple when creating the webhook.
 
 The word [strillone](https://en.wiktionary.org/wiki/strillone) (literally _someone who shouts a lot_, in practice the equivalent of _newspaper boy_) comes from Italian and it refers to the newspaper sellers in the street, who were used to yell the titles in the front page to catch the attention and sell more newspapers.
 
-![](http://cl.ly/0S2s3o2L1Z0p/strillone.jpg)
+![](strillone.jpg)
 
 Photo: [New York Media](http://nymag.com/daily/intelligencer/2013/06/fed-is-having-a-1936-moment.html)
 
