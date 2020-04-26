@@ -69,6 +69,20 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		default:
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
 		}
+	case *webhook.WhoisPrivacyEventData:
+		domainDisplay := data.Domain.Name
+		domainLink := s.FormatLink(domainDisplay, fmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
+		switch e.Name {
+		case "whois_privacy.disable":
+			text = fmt.Sprintf("%s disabled whois privacy for the domain %s", prefix, domainLink)
+		case "whois_privacy.enable":
+			text = fmt.Sprintf("%s enabled whois privacy for the domain %s", prefix, domainLink)
+		case "whois_privacy.purchase":
+			text = fmt.Sprintf("%s purchased whois privacy for the domain %s", prefix, domainLink)
+		default:
+			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
+		}
+
 	case *webhook.ZoneRecordEventData:
 		zoneRecordDisplay := fmt.Sprintf("%s %s.%s %s", data.ZoneRecord.Type, data.ZoneRecord.Name, data.ZoneRecord.ZoneID, data.ZoneRecord.Content)
 		zoneRecordLink := s.FormatLink(zoneRecordDisplay, fmtURL("/a/%d/domains/%s/records/%d", account.ID, data.ZoneRecord.ZoneID, data.ZoneRecord.ID))
