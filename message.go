@@ -79,8 +79,8 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s enabled whois privacy for the domain %s", prefix, domainLink)
 		case "whois_privacy.purchase":
 			text = fmt.Sprintf("%s purchased whois privacy for the domain %s", prefix, domainLink)
-		default:
-			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
+		case "whois_privacy.renew":
+			text = fmt.Sprintf("%s renewed whois privacy for the domain %s", prefix, domainLink)
 		}
 
 	case *webhook.ZoneRecordEventData:
