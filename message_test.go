@@ -79,6 +79,36 @@ func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
 	}
 }
 
+func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
+	service := NewTestMessagingService("dummyMessagingService")
+	payload := `{
+    "name":"account.user_invitation_revoke",
+    "actor": {"pretty": "xxxxxxxxxxxxxxxxx@xxxxxx.xxx"},
+    "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
+    "data":{
+      "account":{
+        "email":"john.doe@email.com"
+      },
+      "account_invitation":{
+        "email":"jane.doe@email.com",
+        "account_id":12345,
+        "invitation_sent_at":"2020-05-12T18:42:44Z",
+        "invitation_accepted_at":null
+      }
+    }
+  }`
+	event, err := webhook.ParseEvent([]byte(payload))
+	if err != nil {
+		t.Fatalf("Error parsing: %v.\n%v", err, payload)
+	}
+
+	result := Message(service, event)
+
+	if want, got := "jane.doe@email.com rejected invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
+		t.Fatalf("Expected '%v', got '%v'", want, got)
+	}
+}
+
 func Test_Message_DefaultMessage(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	account := webhook.Account{Identifier: "ID", Display: "john.doe@gmail.com"}

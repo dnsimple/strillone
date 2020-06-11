@@ -22,6 +22,8 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s invited %s to account %s", account.Email, invitation.Email, membersLink)
 		case "account.user_invitation_accept":
 			text = fmt.Sprintf("%s accepted invitation to account %s", invitation.Email, membersLink)
+		case "account.user_invitation_revoke":
+			text = fmt.Sprintf("%s rejected invitation to account %s", invitation.Email, membersLink)
 		default:
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
