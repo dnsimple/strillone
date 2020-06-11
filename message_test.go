@@ -112,6 +112,35 @@ func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
 	}
 }
 
+func Test_Message_AccountUserRemoveEvent(t *testing.T) {
+	service := NewTestMessagingService("dummyMessagingService")
+	payload := `{
+    "name":"account.user_remove",
+    "actor": {"pretty": "john.doe@email.com"},
+    "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
+    "data":{
+      "user":{
+         "id":1120,
+         "email":"jane.doe@email.com"
+      },
+      "account":{
+         "id":12345,
+         "email":"john.doe@email.com"
+      }
+    }
+  }`
+	event, err := webhook.ParseEvent([]byte(payload))
+	if err != nil {
+		t.Fatalf("Error parsing: %v.\n%v", err, payload)
+	}
+
+	result := Message(service, event)
+
+	if want, got := "john.doe@email.com removed jane.doe@email.com from account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
+		t.Fatalf("Expected '%v', got '%v'", want, got)
+	}
+}
+
 func Test_Message_DefaultMessage(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	account := webhook.Account{Identifier: "ID", Display: "john.doe@gmail.com"}
