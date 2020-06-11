@@ -29,6 +29,7 @@ func Test_Message_AccountUserInviteEvent(t *testing.T) {
     "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
     "data": {
       "account": {
+        "id": 12345,
         "email": "john.doe@email.com"
       },
       "account_invitation": {
@@ -57,6 +58,7 @@ func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
     "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
     "data":{
       "account":{
+        "id": 12345,
         "email":"john.doe@email.com"
       },
       "account_invitation":{
@@ -87,6 +89,7 @@ func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
     "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
     "data":{
       "account":{
+        "id": 12345,
         "email":"john.doe@email.com"
       },
       "account_invitation":{
