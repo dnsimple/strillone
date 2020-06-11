@@ -14,12 +14,10 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 
 	switch data := e.GetData().(type) {
 	case *webhook.AccountMembershipEventData:
-		account := data.Account
-		invitation := data.AccountInvitation
-		membersLink := s.FormatLink(fmt.Sprintf("%d", account.ID), fmtURL("/a/%d/account/members", account.ID))
+		membersLink := s.FormatLink(fmt.Sprintf("%d", data.Account.ID), fmtURL("/a/%d/account/members", data.Account.ID))
 		switch e.Name {
 		case "account.user_invite":
-			text = fmt.Sprintf("%s invited %s to account %s", e.Actor.Pretty, invitation.Email, membersLink)
+			text = fmt.Sprintf("%s invited %s to account %s", e.Actor.Pretty, data.AccountInvitation.Email, membersLink)
 		case "account.user_invitation_accept":
 			text = fmt.Sprintf("%s accepted invitation to account %s", e.Actor.Pretty, membersLink)
 		case "account.user_invitation_revoke":
