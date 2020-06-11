@@ -19,11 +19,11 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		membersLink := s.FormatLink(fmt.Sprintf("%d", invitation.AccountID), fmtURL("/a/%d/account/members", invitation.AccountID))
 		switch e.Name {
 		case "account.user_invite":
-			text = fmt.Sprintf("%s invited %s to account %s", account.Email, invitation.Email, membersLink)
+			text = fmt.Sprintf("%s invited %s to account %s", e.Actor.Pretty, invitation.Email, membersLink)
 		case "account.user_invitation_accept":
-			text = fmt.Sprintf("%s accepted invitation to account %s", invitation.Email, membersLink)
+			text = fmt.Sprintf("%s accepted invitation to account %s", e.Actor.Pretty, membersLink)
 		case "account.user_invitation_revoke":
-			text = fmt.Sprintf("%s rejected invitation to account %s", invitation.Email, membersLink)
+			text = fmt.Sprintf("%s rejected invitation to account %s", e.Actor.Pretty, membersLink)
 		default:
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}

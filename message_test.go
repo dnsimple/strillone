@@ -25,7 +25,7 @@ func Test_Message_AccountUserInviteEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
     "name": "account.user_invite",
-    "actor": {"pretty": "xxxxxxxxxxxxxxxxx@xxxxxx.xxx"},
+    "actor": {"pretty": "john.doe@email.com"},
     "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
     "data": {
       "account": {
@@ -53,7 +53,7 @@ func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
     "name":"account.user_invitation_accept",
-    "actor": {"pretty": "xxxxxxxxxxxxxxxxx@xxxxxx.xxx"},
+    "actor": {"pretty": "jane.doe@email.com"},
     "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
     "data":{
       "account":{
@@ -83,7 +83,7 @@ func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
     "name":"account.user_invitation_revoke",
-    "actor": {"pretty": "xxxxxxxxxxxxxxxxx@xxxxxx.xxx"},
+    "actor": {"pretty": "jane.doe@email.com"},
     "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
     "data":{
       "account":{
