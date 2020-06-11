@@ -13,6 +13,11 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 	prefix := fmt.Sprintf("[%v] %v", s.FormatLink(account.Display, fmtURL("/a/%d/account", account.ID)), e.Actor.Pretty)
 
 	switch data := e.GetData().(type) {
+	case *webhook.AccountMembershipEventData:
+		account := data.Account
+		invitation := data.AccountInvitation
+		membersLink := s.FormatLink(fmt.Sprintf("%d", invitation.AccountID), fmtURL("/a/%d/account/members", invitation.AccountID))
+		text = fmt.Sprintf("%s invited %s to account %s", account.Email, invitation.Email, membersLink)
 	case *webhook.CertificateEventData:
 		certificate := data.Certificate
 		certificateDisplay := certificate.CommonName
