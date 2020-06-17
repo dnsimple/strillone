@@ -24,20 +24,20 @@ func (*TestMessagingService) PostEvent(event *webhook.Event) (string, error) {
 func Test_Message_AccountUserInviteEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
-    "name": "account.user_invite",
-    "actor": {"pretty": "john.doe@email.com"},
-    "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
-    "data": {
-      "account": {
-        "id": 12345,
-        "email": "john.doe@email.com"
-      },
-      "account_invitation": {
-        "email": "jane.doe@email.com",
-        "account_id": 12345
-      }
-    }
-  }`
+		"name": "account.user_invite",
+		"actor": {"pretty": "john.doe@email.com"},
+		"account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
+		"data": {
+			"account": {
+				"id": 12345,
+				"email": "john.doe@email.com"
+			},
+			"account_invitation": {
+				"email": "jane.doe@email.com",
+				"account_id": 12345
+			}
+		}
+	}`
 	event, err := webhook.ParseEvent([]byte(payload))
 	if err != nil {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
@@ -53,22 +53,22 @@ func Test_Message_AccountUserInviteEvent(t *testing.T) {
 func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
-    "name":"account.user_invitation_accept",
-    "actor": {"pretty": "jane.doe@email.com"},
-    "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
-    "data":{
-      "account":{
-        "id": 12345,
-        "email":"john.doe@email.com"
-      },
-      "account_invitation":{
-        "email":"jane.doe@email.com",
-        "account_id":12345,
-        "invitation_sent_at":"2020-05-12T18:42:44Z",
-        "invitation_accepted_at":"2020-05-12T18:43:44Z"
-      }
-    }
-  }`
+		"name":"account.user_invitation_accept",
+		"actor": {"pretty": "jane.doe@email.com"},
+		"account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
+		"data":{
+			"account":{
+				"id": 12345,
+				"email":"john.doe@email.com"
+			},
+			"account_invitation":{
+				"email":"jane.doe@email.com",
+				"account_id":12345,
+				"invitation_sent_at":"2020-05-12T18:42:44Z",
+				"invitation_accepted_at":"2020-05-12T18:43:44Z"
+			}
+		}
+	}`
 	event, err := webhook.ParseEvent([]byte(payload))
 	if err != nil {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
@@ -84,22 +84,22 @@ func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
 func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
-    "name":"account.user_invitation_revoke",
-    "actor": {"pretty": "jane.doe@email.com"},
-    "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
-    "data":{
-      "account":{
-        "id": 12345,
-        "email":"john.doe@email.com"
-      },
-      "account_invitation":{
-        "email":"jane.doe@email.com",
-        "account_id":12345,
-        "invitation_sent_at":"2020-05-12T18:42:44Z",
-        "invitation_accepted_at":null
-      }
-    }
-  }`
+		"name":"account.user_invitation_revoke",
+		"actor": {"pretty": "jane.doe@email.com"},
+		"account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
+		"data":{
+			"account":{
+				"id": 12345,
+				"email":"john.doe@email.com"
+			},
+			"account_invitation":{
+				"email":"jane.doe@email.com",
+				"account_id":12345,
+				"invitation_sent_at":"2020-05-12T18:42:44Z",
+				"invitation_accepted_at":null
+			}
+		}
+	}`
 	event, err := webhook.ParseEvent([]byte(payload))
 	if err != nil {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
@@ -115,20 +115,20 @@ func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
 func Test_Message_AccountUserRemoveEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
-    "name":"account.user_remove",
-    "actor": {"pretty": "john.doe@email.com"},
-    "account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
-    "data":{
-      "user":{
-         "id":1120,
-         "email":"jane.doe@email.com"
-      },
-      "account":{
-         "id":12345,
-         "email":"john.doe@email.com"
-      }
-    }
-  }`
+		"name":"account.user_remove",
+		"actor": {"pretty": "john.doe@email.com"},
+		"account": {"display": "xxxxxxxx", "identifier": "xxxxxxxx"},
+		"data":{
+			"user":{
+				"id":1120,
+				"email":"jane.doe@email.com"
+			},
+			"account":{
+				"id":12345,
+				"email":"john.doe@email.com"
+			}
+		}
+	}`
 	event, err := webhook.ParseEvent([]byte(payload))
 	if err != nil {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
