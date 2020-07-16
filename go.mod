@@ -1,9 +1,9 @@
-// +heroku goVersion go1.13.8
+// +heroku goVersion go1.14.5
 // +heroku install ./cmd/...
 
 module github.com/dnsimple/strillone
 
-go 1.12
+go 1.14
 
 require (
 	github.com/bluele/slack v0.0.0-20180528010058-b4b4d354a079
