@@ -89,7 +89,6 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 
 	case *webhook.EmailForwardEventData:
 		emailforward := data.EmailForward
-		// The webhook doesn't have the "domain" payload, and From is just the name part of the email.
 		emailforwardDisplay := fmt.Sprintf("%s → %s", emailforward.From, emailforward.To)
 		// We don't individual email forwards pages
 		emailforwardLink := s.FormatLink(emailforwardDisplay, fmtURL("/a/%d/domains/%d/email_forwards", account.ID, emailforward.DomainID))
