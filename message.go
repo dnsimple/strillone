@@ -27,6 +27,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		default:
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
+
 	case *webhook.CertificateEventData:
 		certificate := data.Certificate
 		certificateDisplay := certificate.CommonName
@@ -37,6 +38,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		default:
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
+
 	case *webhook.ContactEventData:
 		contactDisplay := fmt.Sprintf("%s %s", data.Contact.FirstName, data.Contact.LastName)
 		contactLink := s.FormatLink(contactDisplay, fmtURL("/a/%d/contacts/%d", account.ID, data.Contact.ID))
@@ -44,12 +46,13 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		case "contact.create":
 			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
 		case "contact.update":
-			text = fmt.Sprintf("%s update the contact %s", prefix, contactLink)
+			text = fmt.Sprintf("%s updated the contact %s", prefix, contactLink)
 		case "contact.delete":
 			text = fmt.Sprintf("%s deleted the contact %s", prefix, contactLink)
 		default:
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
+
 	case *webhook.DomainEventData:
 		domainDisplay := data.Domain.Name
 		domainLink := s.FormatLink(domainDisplay, fmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
@@ -83,6 +86,23 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		default:
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
 		}
+
+	case *webhook.EmailForwardEventData:
+		emailforward := data.EmailForward
+		emailforwardDisplay := emailforward.To
+		// We don't individual email forwards pages
+		emailforwardLink := s.FormatLink(emailforwardDisplay, fmtURL("/a/%d/domains/%d/email_forwards", account.ID, emailforward.DomainID))
+		switch e.Name {
+		case "email_forward.create":
+			text = fmt.Sprintf("%s created the email forward %s", prefix, emailforwardLink)
+		case "email_forward.delete":
+			text = fmt.Sprintf("%s deleted the email forward %s", prefix, emailforwardLink)
+		case "email_forward.update":
+			text = fmt.Sprintf("%s updated the email forward %s", prefix, emailforwardLink)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
+		}
+
 	case *webhook.WhoisPrivacyEventData:
 		domainDisplay := data.Domain.Name
 		domainLink := s.FormatLink(domainDisplay, fmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
@@ -108,6 +128,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		case "zone_record.delete":
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
 		}
+
 	case *webhook.WebhookEventData:
 		webhookDisplay := data.Webhook.URL
 		webhookLink := s.FormatLink(webhookDisplay, fmtURL("/a/%d/webhooks/%d", account.ID, data.Webhook.ID))
@@ -117,6 +138,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		case "webhook.delete":
 			text = fmt.Sprintf("%s deleted the webhook %s", prefix, webhookLink)
 		}
+
 	default:
 		text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 	}
