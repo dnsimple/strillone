@@ -9,9 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-var (
-	server *Server
-)
+var server *Server
 
 func init() {
 	server = NewServer()
