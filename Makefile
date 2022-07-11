@@ -11,4 +11,10 @@ start: build
 	overmind start
 
 lint:
-	golint ./...
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	golangci-lint run
+
+fmt:
+	go install mvdan.cc/gofumpt@latest
+	go fmt ./...
+	gofumpt -w ./
