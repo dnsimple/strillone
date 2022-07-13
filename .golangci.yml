@@ -1,0 +1,16 @@
+linters:
+    enable:
+    - bodyclose # Checks whether HTTP response body is closed successfully
+    - errorlint # Linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
+    - exportloopref # Checks for pointers to enclosing loop variables
+    - gocritic # Provides diagnostics that check for bugs, performance and style issues.
+    - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
+    - gofumpt # Gofumpt checks whether code was gofumpt-ed. Enforces a stricter format than gofmt.
+    - goimports # In addition to fixing imports, goimports also formats your code in the same style as gofmt.
+    - misspell # Finds commonly misspelled English words in comments
+    - prealloc # Finds slice declarations that could potentially be preallocated
+    - predeclared # Find code that shadows one of Go's predeclared identifiers
+    - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint.
+    - testpackage # Linter that makes you use a separate _test package
+    - wastedassign # Finds wasted assignment statements.
+    - whitespace # Tool for detection of leading and trailing whitespace

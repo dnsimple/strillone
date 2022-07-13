@@ -14,9 +14,11 @@ type TestMessagingService struct {
 func NewTestMessagingService(name string) *TestMessagingService {
 	return &TestMessagingService{Name: name}
 }
+
 func (*TestMessagingService) FormatLink(url, name string) string {
 	return fmt.Sprintf("<%s|%s>", url, name)
 }
+
 func (*TestMessagingService) PostEvent(event *webhook.Event) (string, error) {
 	return "ok", nil
 }
