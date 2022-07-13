@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [ $default-branch ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 concurrency:
@@ -44,12 +44,11 @@ jobs:
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
+        # When entering in a new project, the amount of warnings can be
+        # overwhelming. Fix the stuff, but step by step.
+        continue-on-error: true
         with:
           version: latest
-          # When entering in a new project, the amount of warnings can be
-          # overwhelming, so check only the new ones until it gets a better
-          # shape
-          only-new-issues: true
           skip-pkg-cache: true
           skip-build-cache: true
 
