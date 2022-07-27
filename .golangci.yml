@@ -14,3 +14,6 @@ linters:
     - testpackage # Linter that makes you use a separate _test package
     - wastedassign # Finds wasted assignment statements.
     - whitespace # Tool for detection of leading and trailing whitespace
+
+issues:
+    new-from-rev: 1ffac460a0d2
