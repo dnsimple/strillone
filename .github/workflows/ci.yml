@@ -44,11 +44,9 @@ jobs:
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
-        # When entering in a new project, the amount of warnings can be
-        # overwhelming. Fix the stuff, but step by step.
-        continue-on-error: true
         with:
           version: latest
+          only-new-issues: true
           skip-pkg-cache: true
           skip-build-cache: true
 
