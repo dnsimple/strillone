@@ -1,4 +1,4 @@
-package strillone
+package strillone_test
 
 import (
 	"net/http"
@@ -6,13 +6,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dnsimple/strillone"
 	"github.com/julienschmidt/httprouter"
 )
 
-var server *Server
+var server *strillone.Server
 
 func init() {
-	server = NewServer()
+	server = strillone.NewServer()
 }
 
 func TestRoot(t *testing.T) {
@@ -58,7 +59,7 @@ func TestSlackTwice(t *testing.T) {
 	if want := http.StatusOK; want != response.Code {
 		t.Errorf("POST /slack expected HTTP %v, got %v", want, response.Code)
 	}
-	if want, got := "", response.Header().Get(headerProcessingStatus); want != got {
+	if want, got := "", response.Header().Get(strillone.HeaderProcessingStatus); want != got {
 		t.Errorf("POST /slack X-Processing-Status expected empty, got %v", got)
 	}
 
@@ -70,7 +71,7 @@ func TestSlackTwice(t *testing.T) {
 	if want := http.StatusOK; want != responseDuplicate.Code {
 		t.Errorf("POST /slack (duplicate) expected HTTP %v, got %v", want, responseDuplicate.Code)
 	}
-	if want, got := "skipped;already-processed", responseDuplicate.Header().Get(headerProcessingStatus); want != got {
+	if want, got := "skipped;already-processed", responseDuplicate.Header().Get(strillone.HeaderProcessingStatus); want != got {
 		t.Errorf("POST /slack (duplicate) X-Processing-Status expected %v, got %v", want, got)
 	}
 }
