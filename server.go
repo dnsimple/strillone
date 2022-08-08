@@ -15,7 +15,7 @@ import (
 const (
 	dnsimpleURL            = "https://dnsimple.com"
 	cacheTTL               = 300
-	headerProcessingStatus = "X-Processing-Status"
+	HeaderProcessingStatus = "X-Processing-Status"
 )
 
 var (
@@ -58,7 +58,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
-	fmt.Fprintln(w, fmt.Sprintf(`{"ping":"%v","what":"%s"}`, time.Now().Unix(), Program))
+	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}\n`, time.Now().Unix(), Program)
 }
 
 // Slack handles a request to publish a webhook to a Slack channel.
@@ -88,7 +88,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	_, cacheExists := s.webhookCache.Get(event.RequestID)
 	if cacheExists {
 		log.Printf("Skipping event %v as already processed\n", event.RequestID)
-		w.Header().Set(headerProcessingStatus, "skipped;already-processed")
+		w.Header().Set(HeaderProcessingStatus, "skipped;already-processed")
 		w.WriteHeader(http.StatusOK)
 		return
 	}

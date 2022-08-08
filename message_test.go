@@ -1,10 +1,12 @@
-package strillone
+package strillone_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
+
+	"github.com/dnsimple/strillone"
 )
 
 type TestMessagingService struct {
@@ -45,7 +47,7 @@ func Test_Message_AccountUserInviteEvent(t *testing.T) {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
 	}
 
-	result := Message(service, event)
+	result := strillone.Message(service, event)
 
 	if want, got := "john.doe@email.com invited jane.doe@email.com to account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
 		t.Fatalf("Expected '%v', got '%v'", want, got)
@@ -76,7 +78,7 @@ func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
 	}
 
-	result := Message(service, event)
+	result := strillone.Message(service, event)
 
 	if want, got := "jane.doe@email.com accepted invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
 		t.Fatalf("Expected '%v', got '%v'", want, got)
@@ -107,7 +109,7 @@ func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
 	}
 
-	result := Message(service, event)
+	result := strillone.Message(service, event)
 
 	if want, got := "jane.doe@email.com rejected invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
 		t.Fatalf("Expected '%v', got '%v'", want, got)
@@ -136,7 +138,7 @@ func Test_Message_AccountUserRemoveEvent(t *testing.T) {
 		t.Fatalf("Error parsing: %v.\n%v", err, payload)
 	}
 
-	result := Message(service, event)
+	result := strillone.Message(service, event)
 
 	if want, got := "john.doe@email.com removed jane.doe@email.com from account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
 		t.Fatalf("Expected '%v', got '%v'", want, got)
@@ -149,7 +151,7 @@ func Test_Message_DefaultMessage(t *testing.T) {
 	actor := webhook.Actor{Pretty: "john.doe@email.com"}
 	event := webhook.Event{Actor: &actor, Account: &account, Name: "event.name"}
 
-	result := Message(service, &event)
+	result := strillone.Message(service, &event)
 
 	if want, got := "[<john.doe@gmail.com|https://dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result; want != got {
 		t.Fatalf("Expected %v, got %v", want, got)
@@ -157,7 +159,7 @@ func Test_Message_DefaultMessage(t *testing.T) {
 }
 
 func Test_fmtURL(t *testing.T) {
-	if want, got := "https://dnsimple.com/a/1010/domains/1", fmtURL("/a/%v/domains/%v", "1010", 1); want != got {
+	if want, got := "https://dnsimple.com/a/1010/domains/1", strillone.FmtURL("/a/%v/domains/%v", "1010", 1); want != got {
 		t.Fatalf("Expected %v, got %v", want, got)
 	}
 }

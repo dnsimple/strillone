@@ -10,11 +10,11 @@ import (
 // Message formats the event into a text message suitable for being sent to a messaging service.
 func Message(s MessagingService, e *webhook.Event) (text string) {
 	account := e.Account
-	prefix := fmt.Sprintf("[%v] %v", s.FormatLink(account.Display, fmtURL("/a/%d/account", account.ID)), e.Actor.Pretty)
+	prefix := fmt.Sprintf("[%v] %v", s.FormatLink(account.Display, FmtURL("/a/%d/account", account.ID)), e.Actor.Pretty)
 
 	switch data := e.GetData().(type) {
 	case *webhook.AccountMembershipEventData:
-		membersLink := s.FormatLink(fmt.Sprintf("%d", data.Account.ID), fmtURL("/a/%d/account/members", data.Account.ID))
+		membersLink := s.FormatLink(fmt.Sprintf("%d", data.Account.ID), FmtURL("/a/%d/account/members", data.Account.ID))
 		switch e.Name {
 		case "account.user_invite":
 			text = fmt.Sprintf("%s invited %s to account %s", e.Actor.Pretty, data.AccountInvitation.Email, membersLink)
@@ -31,7 +31,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 	case *webhook.CertificateEventData:
 		certificate := data.Certificate
 		certificateDisplay := certificate.CommonName
-		certificateLink := s.FormatLink(certificateDisplay, fmtURL("/a/%d/domains/%d/certificates/%d", account.ID, certificate.DomainID, certificate.ID))
+		certificateLink := s.FormatLink(certificateDisplay, FmtURL("/a/%d/domains/%d/certificates/%d", account.ID, certificate.DomainID, certificate.ID))
 		switch e.Name {
 		case "certificate.remove_private_key":
 			text = fmt.Sprintf("%s deleted the private key for the certificate %s", prefix, certificateLink)
@@ -41,7 +41,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 
 	case *webhook.ContactEventData:
 		contactDisplay := fmt.Sprintf("%s %s", data.Contact.FirstName, data.Contact.LastName)
-		contactLink := s.FormatLink(contactDisplay, fmtURL("/a/%d/contacts/%d", account.ID, data.Contact.ID))
+		contactLink := s.FormatLink(contactDisplay, FmtURL("/a/%d/contacts/%d", account.ID, data.Contact.ID))
 		switch e.Name {
 		case "contact.create":
 			text = fmt.Sprintf("%s created the contact %s", prefix, contactLink)
@@ -55,7 +55,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 
 	case *webhook.DomainEventData:
 		domainDisplay := data.Domain.Name
-		domainLink := s.FormatLink(domainDisplay, fmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
+		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
 		switch e.Name {
 		case "domain.auto_renewal_enable":
 			text = fmt.Sprintf("%s enabled auto-renewal for the domain %s", prefix, domainLink)
@@ -91,7 +91,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		emailforward := data.EmailForward
 		emailforwardDisplay := fmt.Sprintf("%s → %s", emailforward.From, emailforward.To)
 		// We don't individual email forwards pages
-		emailforwardLink := s.FormatLink(emailforwardDisplay, fmtURL("/a/%d/domains/%d/email_forwards", account.ID, emailforward.DomainID))
+		emailforwardLink := s.FormatLink(emailforwardDisplay, FmtURL("/a/%d/domains/%d/email_forwards", account.ID, emailforward.DomainID))
 		switch e.Name {
 		case "email_forward.create":
 			text = fmt.Sprintf("%s created the email forward %s", prefix, emailforwardLink)
@@ -105,7 +105,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 
 	case *webhook.WhoisPrivacyEventData:
 		domainDisplay := data.Domain.Name
-		domainLink := s.FormatLink(domainDisplay, fmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
+		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
 		switch e.Name {
 		case "whois_privacy.disable":
 			text = fmt.Sprintf("%s disabled whois privacy for the domain %s", prefix, domainLink)
@@ -119,7 +119,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 
 	case *webhook.ZoneRecordEventData:
 		zoneRecordDisplay := fmt.Sprintf("%s %s.%s %s", data.ZoneRecord.Type, data.ZoneRecord.Name, data.ZoneRecord.ZoneID, data.ZoneRecord.Content)
-		zoneRecordLink := s.FormatLink(zoneRecordDisplay, fmtURL("/a/%d/domains/%s/records/%d", account.ID, data.ZoneRecord.ZoneID, data.ZoneRecord.ID))
+		zoneRecordLink := s.FormatLink(zoneRecordDisplay, FmtURL("/a/%d/domains/%s/records/%d", account.ID, data.ZoneRecord.ZoneID, data.ZoneRecord.ID))
 		switch e.Name {
 		case "zone_record.create":
 			text = fmt.Sprintf("%s created the record %s", prefix, zoneRecordLink)
@@ -131,7 +131,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 
 	case *webhook.WebhookEventData:
 		webhookDisplay := data.Webhook.URL
-		webhookLink := s.FormatLink(webhookDisplay, fmtURL("/a/%d/webhooks/%d", account.ID, data.Webhook.ID))
+		webhookLink := s.FormatLink(webhookDisplay, FmtURL("/a/%d/webhooks/%d", account.ID, data.Webhook.ID))
 		switch e.Name {
 		case "webhook.create":
 			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
@@ -150,6 +150,6 @@ func eventRequestID(e *webhook.Event) string {
 	return e.RequestID
 }
 
-func fmtURL(path string, a ...interface{}) string {
+func FmtURL(path string, a ...interface{}) string {
 	return fmt.Sprintf(dnsimpleURL+path, a...)
 }
