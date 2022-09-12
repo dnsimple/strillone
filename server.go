@@ -2,7 +2,7 @@ package strillone
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -70,7 +70,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		return
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Printf("Error parsing body: %v\n", err)
