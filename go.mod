@@ -15,7 +15,7 @@ require (
 require (
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	google.golang.org/appengine v1.6.1 // indirect
 )
