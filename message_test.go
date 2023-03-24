@@ -21,7 +21,7 @@ func (*TestMessagingService) FormatLink(url, name string) string {
 	return fmt.Sprintf("<%s|%s>", url, name)
 }
 
-func (*TestMessagingService) PostEvent(event *webhook.Event) (string, error) {
+func (*TestMessagingService) PostEvent(_ *webhook.Event) (string, error) {
 	return "ok", nil
 }
 
