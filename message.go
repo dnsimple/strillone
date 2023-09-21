@@ -103,6 +103,16 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
 
+	case *webhook.WebhookEventData:
+		webhookDisplay := data.Webhook.URL
+		webhookLink := s.FormatLink(webhookDisplay, FmtURL("/a/%d/webhooks/%d", account.ID, data.Webhook.ID))
+		switch e.Name {
+		case "webhook.create":
+			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
+		case "webhook.delete":
+			text = fmt.Sprintf("%s deleted the webhook %s", prefix, webhookLink)
+		}
+
 	case *webhook.WhoisPrivacyEventData:
 		domainDisplay := data.Domain.Name
 		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
@@ -127,16 +137,6 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s updated the record %s", prefix, zoneRecordLink)
 		case "zone_record.delete":
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
-		}
-
-	case *webhook.WebhookEventData:
-		webhookDisplay := data.Webhook.URL
-		webhookLink := s.FormatLink(webhookDisplay, FmtURL("/a/%d/webhooks/%d", account.ID, data.Webhook.ID))
-		switch e.Name {
-		case "webhook.create":
-			text = fmt.Sprintf("%s created the webhook %s", prefix, webhookLink)
-		case "webhook.delete":
-			text = fmt.Sprintf("%s deleted the webhook %s", prefix, webhookLink)
 		}
 
 	default:
