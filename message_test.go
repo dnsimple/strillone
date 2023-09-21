@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
-
 	"github.com/dnsimple/strillone"
+	"github.com/stretchr/testify/assert"
 )
 
 type TestMessagingService struct {
@@ -43,15 +43,10 @@ func Test_Message_AccountUserInviteEvent(t *testing.T) {
 		}
 	}`
 	event, err := webhook.ParseEvent([]byte(payload))
-	if err != nil {
-		t.Fatalf("Error parsing: %v.\n%v", err, payload)
-	}
+	assert.NoError(t, err)
 
 	result := strillone.Message(service, event)
-
-	if want, got := "john.doe@email.com invited jane.doe@email.com to account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
-		t.Fatalf("Expected '%v', got '%v'", want, got)
-	}
+	assert.Equal(t, "john.doe@email.com invited jane.doe@email.com to account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
 func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
@@ -74,15 +69,10 @@ func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
 		}
 	}`
 	event, err := webhook.ParseEvent([]byte(payload))
-	if err != nil {
-		t.Fatalf("Error parsing: %v.\n%v", err, payload)
-	}
+	assert.NoError(t, err)
 
 	result := strillone.Message(service, event)
-
-	if want, got := "jane.doe@email.com accepted invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
-		t.Fatalf("Expected '%v', got '%v'", want, got)
-	}
+	assert.Equal(t, "jane.doe@email.com accepted invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
 func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
@@ -105,15 +95,10 @@ func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
 		}
 	}`
 	event, err := webhook.ParseEvent([]byte(payload))
-	if err != nil {
-		t.Fatalf("Error parsing: %v.\n%v", err, payload)
-	}
+	assert.NoError(t, err)
 
 	result := strillone.Message(service, event)
-
-	if want, got := "jane.doe@email.com rejected invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
-		t.Fatalf("Expected '%v', got '%v'", want, got)
-	}
+	assert.Equal(t, "jane.doe@email.com rejected invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
 func Test_Message_AccountUserRemoveEvent(t *testing.T) {
@@ -134,15 +119,10 @@ func Test_Message_AccountUserRemoveEvent(t *testing.T) {
 		}
 	}`
 	event, err := webhook.ParseEvent([]byte(payload))
-	if err != nil {
-		t.Fatalf("Error parsing: %v.\n%v", err, payload)
-	}
+	assert.NoError(t, err)
 
 	result := strillone.Message(service, event)
-
-	if want, got := "john.doe@email.com removed jane.doe@email.com from account <12345|https://dnsimple.com/a/12345/account/members>", result; want != got {
-		t.Fatalf("Expected '%v', got '%v'", want, got)
-	}
+	assert.Equal(t, "john.doe@email.com removed jane.doe@email.com from account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
 func Test_Message_DefaultMessage(t *testing.T) {
@@ -152,14 +132,9 @@ func Test_Message_DefaultMessage(t *testing.T) {
 	event := webhook.Event{Actor: &actor, Account: &account, Name: "event.name"}
 
 	result := strillone.Message(service, &event)
-
-	if want, got := "[<john.doe@gmail.com|https://dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result; want != got {
-		t.Fatalf("Expected %v, got %v", want, got)
-	}
+	assert.Equal(t, "[<john.doe@gmail.com|https://dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result)
 }
 
 func Test_fmtURL(t *testing.T) {
-	if want, got := "https://dnsimple.com/a/1010/domains/1", strillone.FmtURL("/a/%v/domains/%v", "1010", 1); want != got {
-		t.Fatalf("Expected %v, got %v", want, got)
-	}
+	assert.Equal(t, "https://dnsimple.com/a/1010/domains/1", strillone.FmtURL("/a/%v/domains/%v", "1010", 1))
 }
