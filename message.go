@@ -87,6 +87,18 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
 		}
 
+	case *webhook.DomainTransferLockEventData:
+		domainDisplay := data.Domain.Name
+		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
+		switch e.Name {
+		case "domain.transfer_lock_enable":
+			text = fmt.Sprintf("%s enabled transfer lock for the domain %s", prefix, domainLink)
+		case "domain.transfer_lock_disable":
+			text = fmt.Sprintf("%s disabled transfer lock for the domain %s", prefix, domainLink)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
+		}
+
 	case *webhook.EmailForwardEventData:
 		emailforward := data.EmailForward
 		emailforwardDisplay := fmt.Sprintf("%s → %s", emailforward.AliasEmail, emailforward.DestinationEmail)

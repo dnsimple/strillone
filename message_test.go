@@ -145,6 +145,36 @@ func Test_Message_AccountUserRemoveEvent(t *testing.T) {
 	}
 }
 
+func Test_Message_DomainTransferLockDisableEvent(t *testing.T) {
+	service := NewTestMessagingService("dummyMessagingService")
+	payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "registered", "account_id": 1010, "auto_renew": false, "created_at": "2023-03-02T02:39:18Z", "expires_at": "2024-03-02T02:39:22Z", "expires_on": "2024-03-02", "updated_at": "2023-08-31T06:46:48Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": 101}}, "name": "domain.transfer_lock_disable", "actor": {"id": "1010", "entity": "account", "pretty": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "account": {"id": 1010, "display": "xxxxxxx-xxxxxxx-xxxxxxx", "identifier": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "api_version": "v2", "request_identifier": "0f31483c-c303-497b-8a88-2edb48aa111e"}`
+	event, err := webhook.ParseEvent([]byte(payload))
+	if err != nil {
+		t.Fatalf("Error parsing: %v.\n%v", err, payload)
+	}
+
+	result := strillone.Message(service, event)
+
+	if want, got := "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com disabled transfer lock for the domain <example.com|https://dnsimple.com/a/1010/domains/example.com>", result; want != got {
+		t.Fatalf("Expected '%v', got '%v'", want, got)
+	}
+}
+
+func Test_Message_DomainTransferLockEnableEvent(t *testing.T) {
+	service := NewTestMessagingService("dummyMessagingService")
+	payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "registered", "account_id": 1010, "auto_renew": false, "created_at": "2023-03-02T02:39:18Z", "expires_at": "2024-03-02T02:39:22Z", "expires_on": "2024-03-02", "updated_at": "2023-08-31T06:46:48Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": 101}}, "name": "domain.transfer_lock_enable", "actor": {"id": "1010", "entity": "account", "pretty": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "account": {"id": 1010, "display": "xxxxxxx-xxxxxxx-xxxxxxx", "identifier": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "api_version": "v2", "request_identifier": "0f31483c-c303-497b-8a88-2edb48aa111e"}`
+	event, err := webhook.ParseEvent([]byte(payload))
+	if err != nil {
+		t.Fatalf("Error parsing: %v.\n%v", err, payload)
+	}
+
+	result := strillone.Message(service, event)
+
+	if want, got := "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com enabled transfer lock for the domain <example.com|https://dnsimple.com/a/1010/domains/example.com>", result; want != got {
+		t.Fatalf("Expected '%v', got '%v'", want, got)
+	}
+}
+
 func Test_Message_DefaultMessage(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	account := webhook.Account{Identifier: "ID", Display: "john.doe@gmail.com"}
