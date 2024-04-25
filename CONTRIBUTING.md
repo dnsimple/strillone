@@ -30,13 +30,11 @@ cd ~
 brew install overmind
 ```
 
-
 ## Compilation
 
 ```shell
 make build
 ```
-
 
 ## Testing
 
@@ -45,7 +43,6 @@ To run the test suite:
 ```shell
 make test
 ```
-
 
 ## Running
 
@@ -62,7 +59,6 @@ make start
 The current Go version is defined in the `.tool-versions` file. Contributors are expected to use `asdf` to install and manage Go running environments.
 
 Go modules are enabled. The file `go.mod` MUST include the `go` directive to determine the language feature used by `go` commands.
-
 
 ## Dependency management
 
