@@ -2,7 +2,7 @@
 
 _Strillone_ is a service to publish the events generated from a DNSimple account to a messaging service, using the DNSimple webhooks.
 
-[![Build Status](https://travis-ci.com/dnsimple/strillone.svg?branch=main)](https://travis-ci.com/dnsimple/strillone)
+[![ci](https://github.com/dnsimple/strillone/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dnsimple/strillone/actions/workflows/ci.yml)
 
 ![Example](img-example.png)
 
