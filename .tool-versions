@@ -1,2 +1,2 @@
 # Update also: go.mod .github/workflows/ci.yml
-golang 1.22.5
+golang 1.23.2
