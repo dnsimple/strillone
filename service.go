@@ -1,11 +1,14 @@
 package strillone
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
+	"time"
 
-	"github.com/bluele/slack"
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
+	"github.com/slack-go/slack"
 )
 
 // MessagingService represents a service where the event is published.
@@ -46,26 +49,26 @@ func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s", s.Token)
 	log.Printf("[event:%v] Sending event to slack %v\n", eventID, slackWebhookURL)
 
-	webhook := slack.NewWebHook(slackWebhookURL)
-	webhookErr := webhook.PostMessage(&slack.WebHookPostPayload{
-		Username: "DNSimple",
-		IconUrl:  "http://cl.ly/2t0u2Q380N3y/trusty.png",
-		Attachments: []*slack.Attachment{
-			{
-				Fallback: text,
-				Color:    "good",
-				Fields: []*slack.AttachmentField{
-					{
-						Title: event.Name,
-						Value: text,
-					},
-				},
-			},
-		},
-	})
-	if webhookErr != nil {
-		log.Printf("[event:%v] Error sending to slack: %v\n", eventID, webhookErr)
+	attachment := slack.Attachment{
+		Color:         "good",
+		Fallback:      text,
+		AuthorName:    "DNSimple",
+		AuthorSubname: "Strillone",
+		AuthorLink:    "https://github.com/dnsimple/strillone",
+		AuthorIcon:    "http://cl.ly/2t0u2Q380N3y/trusty.png",
+		Title:         event.Name,
+		Text:          text,
+		Ts:            json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
+	}
+	msg := slack.WebhookMessage{
+		Attachments: []slack.Attachment{attachment},
 	}
 
-	return text, webhookErr
+	err := slack.PostWebhook(slackWebhookURL, &msg)
+	if err != nil {
+		log.Printf("[event:%v] Error sending to slack: %v\n", eventID, err)
+		return "", err
+	}
+
+	return text, nil
 }
