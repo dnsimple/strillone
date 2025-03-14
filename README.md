@@ -36,15 +36,15 @@ Once you configured the publisher and generated the webhook URL, use the URL to 
 
 ## Slack configuration
 
-Strillone integrates with Slack using the [Slack Incoming Webhook](https://api.slack.com/incoming-webhooks) feature.
+Strillone integrates with Slack using the **Slack Incoming Webhook** feature.
 
-First, you need to [setup an incoming webhook](https://my.slack.com/services/new/incoming-webhook/). Select the Slack channel and follow the instructions.
-
-![Config 1](img-config-1.png)
+You can follow their [official guide on setting up incoming webhooks via an app](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks/).
 
 Once created, Slack will give you a _Webhook URL_ that looks like the following one:
 
-![Config 2](img-config-2.png)
+```bash
+https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+```
 
 To generate the Strillone webhook URL, simply replace the initial fixed part of the Slack webhook URL with `https://your-strillone-domain.com/slack`.
 
@@ -54,7 +54,7 @@ For instance, if your Heroku app is `https://happy-panda.herokuapp.com/` and the
 https://your-strillone-domain.com/slack/XXXXX/YYYYY/ZZZZZZZZZZ
 ```
 
-This is the URL you have to enter in DNSimple when creating the webhook.
+This is the URL you have to enter in DNSimple when creating the webhook [via the UI](https://support.dnsimple.com/articles/webhooks/) or through our [API](https://developer.dnsimple.com/v2/webhooks/webhooks/).
 
 ## About the name
 
