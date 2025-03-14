@@ -1,4 +1,4 @@
-// +heroku goVersion go1.23.2
+// +heroku goVersion go1.24.1
 // +heroku install ./cmd/...
 
 module github.com/dnsimple/strillone
