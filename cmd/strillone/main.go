@@ -3,31 +3,27 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/dnsimple/strillone/internal/config"
 	xhttp "github.com/dnsimple/strillone/internal/http"
 )
 
 var (
-	// Program name
-	Program = "dnsimple-strillone"
-
 	// Version is replaced at compilation time
 	Version string
 )
 
 func main() {
-	log.Printf("Starting %s/%s\n", Program, Version)
-
-	httpPort := os.Getenv("PORT")
-	if httpPort == "" {
-		httpPort = "4000"
+	cfg, err := config.NewConfig()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
+	config.Config = cfg
 
 	server := xhttp.NewServer()
 
-	log.Printf("%s listening on %s...\n", Program, httpPort)
-	if err := http.ListenAndServe(":"+httpPort, server); err != nil {
+	log.Printf("%s listening on %s...\n", config.Program, cfg.Port)
+	if err := http.ListenAndServe(":"+cfg.Port, server); err != nil {
 		log.Fatal(err.Error())
 	}
 }

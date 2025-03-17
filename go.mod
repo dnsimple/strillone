@@ -6,6 +6,7 @@ module github.com/dnsimple/strillone
 go 1.24.1
 
 require (
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/dnsimple/dnsimple-go v1.7.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/slack-go/slack v0.16.0
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	github.com/caarlos0/env/v11 v11.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect

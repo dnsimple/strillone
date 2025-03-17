@@ -5,10 +5,7 @@ import (
 	"strings"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
-)
-
-const (
-	dnsimpleURL = "https://dnsimple.com"
+	"github.com/dnsimple/strillone/internal/config"
 )
 
 // Message formats the event into a text message suitable for being sent to a messaging service.
@@ -167,5 +164,5 @@ func eventRequestID(e *webhook.Event) string {
 }
 
 func FmtURL(path string, a ...interface{}) string {
-	return fmt.Sprintf(dnsimpleURL+path, a...)
+	return fmt.Sprintf(config.Config.DNSimpleUrl+path, a...)
 }
