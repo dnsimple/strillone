@@ -12,9 +12,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  GO_VERSION: "1.23.2"
-
 jobs:
   yamllint:
     runs-on: ubuntu-latest
@@ -33,7 +30,7 @@ jobs:
         uses: nosborn/github-action-markdown-cli@v3.4.0
         with:
           files: .
-          config_file: ".markdownlint.yaml"
+          config_file: '.markdownlint.yaml'
 
   golangci-lint:
     runs-on: ubuntu-latest
@@ -45,7 +42,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: 'go.mod'
           cache: true
 
       - name: golangci-lint
@@ -68,7 +65,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: 'go.mod'
           cache: true
 
       - run: make build
@@ -84,7 +81,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: 'go.mod'
           cache: true
 
       - run: make test
