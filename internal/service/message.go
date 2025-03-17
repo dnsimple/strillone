@@ -1,10 +1,14 @@
-package strillone
+package service
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
+)
+
+const (
+	dnsimpleURL = "https://dnsimple.com"
 )
 
 // Message formats the event into a text message suitable for being sent to a messaging service.

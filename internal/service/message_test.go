@@ -1,11 +1,11 @@
-package strillone_test
+package service_test
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
-	"github.com/dnsimple/strillone"
+	strillone "github.com/dnsimple/strillone/internal/service"
 	"github.com/stretchr/testify/assert"
 )
 

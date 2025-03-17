@@ -1,4 +1,4 @@
-package strillone
+package service
 
 import (
 	"encoding/json"

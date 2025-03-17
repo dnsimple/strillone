@@ -1,4 +1,4 @@
-package strillone_test
+package http_test
 
 import (
 	"net/http"
@@ -6,15 +6,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dnsimple/strillone"
+	appServer "github.com/dnsimple/strillone/internal/http"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
 
-var server *strillone.Server
+var server *appServer.Server
 
 func init() {
-	server = strillone.NewServer()
+	server = appServer.NewServer()
 }
 
 func TestRoot(t *testing.T) {
@@ -52,7 +52,7 @@ func TestSlackTwice(t *testing.T) {
 	if want := http.StatusOK; want != response.Code {
 		t.Errorf("POST /slack expected HTTP %v, got %v", want, response.Code)
 	}
-	assert.Empty(t, response.Header().Get(strillone.HeaderProcessingStatus))
+	assert.Empty(t, response.Header().Get(appServer.HeaderProcessingStatus))
 
 	requestDuplicate, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
 	responseDuplicate := httptest.NewRecorder()
@@ -60,5 +60,5 @@ func TestSlackTwice(t *testing.T) {
 	server.Slack(responseDuplicate, requestDuplicate, httprouter.Params{})
 
 	assert.Equal(t, http.StatusOK, response.Code)
-	assert.Equal(t, "skipped;already-processed", responseDuplicate.Header().Get(strillone.HeaderProcessingStatus))
+	assert.Equal(t, "skipped;already-processed", responseDuplicate.Header().Get(appServer.HeaderProcessingStatus))
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dnsimple/strillone"
+	xhttp "github.com/dnsimple/strillone/internal/http"
 )
 
 var (
@@ -24,7 +24,7 @@ func main() {
 		httpPort = "4000"
 	}
 
-	server := strillone.NewServer()
+	server := xhttp.NewServer()
 
 	log.Printf("%s listening on %s...\n", Program, httpPort)
 	if err := http.ListenAndServe(":"+httpPort, server); err != nil {
