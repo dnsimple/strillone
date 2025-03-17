@@ -66,6 +66,7 @@ For example:
 ### Step 3: Add the webhook to DNSimple
 
 Use this newly created URL when setting up your webhook in DNSimple:
+
 - Either through the [DNSimple dashboard](https://support.dnsimple.com/articles/webhooks/)
 - Or via the [DNSimple API](https://developer.dnsimple.com/v2/webhooks/webhooks/)
 
