@@ -164,5 +164,5 @@ func eventRequestID(e *webhook.Event) string {
 }
 
 func FmtURL(path string, a ...interface{}) string {
-	return fmt.Sprintf(config.Config.DNSimpleUrl+path, a...)
+	return fmt.Sprintf(config.Config.DNSimpleURL+path, a...)
 }

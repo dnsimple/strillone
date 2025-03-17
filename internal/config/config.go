@@ -16,8 +16,8 @@ var (
 type AppConfig struct {
 	// Port is the HTTP port the server listens on.
 	Port string `env:"PORT" envDefault:"4000"`
-	// DNSimpleUrl is the DNSimple app URL.
-	DNSimpleUrl string `env:"DNSIMPLE_URL" envDefault:"https://dnsimple.com"`
+	// DNSimpleURL is the DNSimple app URL.
+	DNSimpleURL string `env:"DNSIMPLE_URL" envDefault:"https://dnsimple.com"`
 }
 
 // NewConfig returns a new AppConfig instance.
