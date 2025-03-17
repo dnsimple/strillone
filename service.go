@@ -55,7 +55,7 @@ func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 		AuthorName:    "DNSimple",
 		AuthorSubname: "Strillone",
 		AuthorLink:    "https://github.com/dnsimple/strillone",
-		AuthorIcon:    "http://cl.ly/2t0u2Q380N3y/trusty.png",
+		AuthorIcon:    "https://cdn.dnsimple.com/assets/strillone/icon128.png",
 		Title:         event.Name,
 		Text:          text,
 		Ts:            json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
