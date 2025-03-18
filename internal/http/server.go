@@ -1,4 +1,4 @@
-package strillone
+package http
 
 import (
 	"fmt"
@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
+	"github.com/dnsimple/strillone/internal/service"
 	"github.com/julienschmidt/httprouter"
 	"github.com/wunderlist/ttlcache"
 )
 
 const (
-	dnsimpleURL            = "https://dnsimple.com"
 	cacheTTL               = 300
 	HeaderProcessingStatus = "X-Processing-Status"
 )
@@ -96,7 +96,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
 	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 
-	service := &SlackService{Token: slackToken}
+	service := &service.SlackService{Token: slackToken}
 	text, err := service.PostEvent(event)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -2,7 +2,7 @@ test:
 	go test -v ./...
 
 build:
-	go build -ldflags "-X main.Version=$$(git rev-parse --short HEAD)" -o bin/strillone cmd/strillone/*.go
+	go build -o bin/strillone cmd/strillone/*.go
 
 clean:
 	rm bin/strillone

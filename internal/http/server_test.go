@@ -1,20 +1,39 @@
-package strillone_test
+package http_test
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
-	"github.com/dnsimple/strillone"
+	"github.com/dnsimple/strillone/internal/config"
+	appServer "github.com/dnsimple/strillone/internal/http"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
 
-var server *strillone.Server
+var server *appServer.Server
 
 func init() {
-	server = strillone.NewServer()
+	server = appServer.NewServer()
+}
+
+func TestMain(m *testing.M) {
+	// Load configuration here
+	// This ensures configuration is available before any tests run
+	cfg, err := config.NewConfig()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+	config.Config = cfg
+
+	// Run the tests
+	exitCode := m.Run()
+
+	// Exit with the same code
+	os.Exit(exitCode)
 }
 
 func TestRoot(t *testing.T) {
@@ -52,7 +71,7 @@ func TestSlackTwice(t *testing.T) {
 	if want := http.StatusOK; want != response.Code {
 		t.Errorf("POST /slack expected HTTP %v, got %v", want, response.Code)
 	}
-	assert.Empty(t, response.Header().Get(strillone.HeaderProcessingStatus))
+	assert.Empty(t, response.Header().Get(appServer.HeaderProcessingStatus))
 
 	requestDuplicate, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
 	responseDuplicate := httptest.NewRecorder()
@@ -60,5 +79,5 @@ func TestSlackTwice(t *testing.T) {
 	server.Slack(responseDuplicate, requestDuplicate, httprouter.Params{})
 
 	assert.Equal(t, http.StatusOK, response.Code)
-	assert.Equal(t, "skipped;already-processed", responseDuplicate.Header().Get(strillone.HeaderProcessingStatus))
+	assert.Equal(t, "skipped;already-processed", responseDuplicate.Header().Get(appServer.HeaderProcessingStatus))
 }

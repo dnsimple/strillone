@@ -1,13 +1,32 @@
-package strillone_test
+package service_test
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
-	"github.com/dnsimple/strillone"
+	"github.com/dnsimple/strillone/internal/config"
+	xservice "github.com/dnsimple/strillone/internal/service"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	// Load configuration here
+	// This ensures configuration is available before any tests run
+	cfg, err := config.NewConfig()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+	config.Config = cfg
+
+	// Run the tests
+	exitCode := m.Run()
+
+	// Exit with the same code
+	os.Exit(exitCode)
+}
 
 type TestMessagingService struct {
 	Name string
@@ -45,7 +64,7 @@ func Test_Message_AccountUserInviteEvent(t *testing.T) {
 	event, err := webhook.ParseEvent([]byte(payload))
 	assert.NoError(t, err)
 
-	result := strillone.Message(service, event)
+	result := xservice.Message(service, event)
 	assert.Equal(t, "john.doe@email.com invited jane.doe@email.com to account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
@@ -71,7 +90,7 @@ func Test_Message_AccountUserInvitationAcceptEvent(t *testing.T) {
 	event, err := webhook.ParseEvent([]byte(payload))
 	assert.NoError(t, err)
 
-	result := strillone.Message(service, event)
+	result := xservice.Message(service, event)
 	assert.Equal(t, "jane.doe@email.com accepted invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
@@ -97,7 +116,7 @@ func Test_Message_AccountUserInvitationRevokeEvent(t *testing.T) {
 	event, err := webhook.ParseEvent([]byte(payload))
 	assert.NoError(t, err)
 
-	result := strillone.Message(service, event)
+	result := xservice.Message(service, event)
 	assert.Equal(t, "jane.doe@email.com rejected invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
@@ -121,7 +140,7 @@ func Test_Message_AccountUserRemoveEvent(t *testing.T) {
 	event, err := webhook.ParseEvent([]byte(payload))
 	assert.NoError(t, err)
 
-	result := strillone.Message(service, event)
+	result := xservice.Message(service, event)
 	assert.Equal(t, "john.doe@email.com removed jane.doe@email.com from account <12345|https://dnsimple.com/a/12345/account/members>", result)
 }
 
@@ -131,7 +150,7 @@ func Test_Message_DomainTransferLockDisableEvent(t *testing.T) {
 	event, err := webhook.ParseEvent([]byte(payload))
 	assert.NoError(t, err)
 
-	result := strillone.Message(service, event)
+	result := xservice.Message(service, event)
 	assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com disabled transfer lock for the domain <example.com|https://dnsimple.com/a/1010/domains/example.com>", result)
 }
 
@@ -141,7 +160,7 @@ func Test_Message_DomainTransferLockEnableEvent(t *testing.T) {
 	event, err := webhook.ParseEvent([]byte(payload))
 	assert.NoError(t, err)
 
-	result := strillone.Message(service, event)
+	result := xservice.Message(service, event)
 	assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com enabled transfer lock for the domain <example.com|https://dnsimple.com/a/1010/domains/example.com>", result)
 }
 
@@ -151,10 +170,10 @@ func Test_Message_DefaultMessage(t *testing.T) {
 	actor := webhook.Actor{Pretty: "john.doe@email.com"}
 	event := webhook.Event{Actor: &actor, Account: &account, Name: "event.name"}
 
-	result := strillone.Message(service, &event)
+	result := xservice.Message(service, &event)
 	assert.Equal(t, "[<john.doe@gmail.com|https://dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result)
 }
 
 func Test_fmtURL(t *testing.T) {
-	assert.Equal(t, "https://dnsimple.com/a/1010/domains/1", strillone.FmtURL("/a/%v/domains/%v", "1010", 1))
+	assert.Equal(t, "https://dnsimple.com/a/1010/domains/1", xservice.FmtURL("/a/%v/domains/%v", "1010", 1))
 }
