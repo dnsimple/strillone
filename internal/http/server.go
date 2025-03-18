@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"github.com/dnsimple/strillone/internal/config"
 	"io"
 	"log"
 	"net/http"
@@ -16,14 +17,6 @@ import (
 const (
 	cacheTTL               = 300
 	HeaderProcessingStatus = "X-Processing-Status"
-)
-
-var (
-	// Program name
-	Program = "dnsimple-strillone"
-
-	// Version is replaced at compilation time
-	Version string
 )
 
 // Server represents a front-end web server.
@@ -58,7 +51,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
-	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), Program)
+	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), config.Program)
 }
 
 // Slack handles a request to publish a webhook to a Slack channel.

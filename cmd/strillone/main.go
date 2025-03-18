@@ -8,9 +8,6 @@ import (
 	xhttp "github.com/dnsimple/strillone/internal/http"
 )
 
-// Version is replaced at compilation time
-var Version string
-
 func main() {
 	cfg, err := config.NewConfig()
 	if err != nil {
