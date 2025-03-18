@@ -8,7 +8,7 @@ all: build
 
 .PHONY: build
 build:
-	go build -ldflags "-X config.Version=$(PKG_VERSION)" -o bin/strillone cmd/strillone/*.go
+	go build -ldflags "-X github.com/dnsimple/strillone/internal/config.Version=$(PKG_VERSION)" -o bin/strillone cmd/strillone/*.go
 
 .PHONY: clean
 clean:
