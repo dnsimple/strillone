@@ -32,13 +32,15 @@ jobs:
           files: .
           config_file: '.markdownlint.yaml'
 
-  golangci-lint:
+  test:
+    name: Test
     runs-on: ubuntu-latest
+    needs:
+      - markdownlint-cli
+      - yamllint
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
@@ -49,39 +51,5 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          skip-pkg-cache: true
-          skip-build-cache: true
-
-  build:
-    runs-on: ubuntu-latest
-    needs:
-      - golangci-lint
-      - markdownlint-cli
-      - yamllint
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-          cache: true
-
-      - run: make build
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    needs:
-      - build
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-          cache: true
 
       - run: make test

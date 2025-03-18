@@ -1,19 +1,31 @@
-test:
-	go test -v ./...
+ifdef PACKAGER_VERSION
+PKG_VERSION := $(PACKAGER_VERSION)
+else
+PKG_VERSION := development
+endif
 
+all: build
+
+.PHONY: build
 build:
-	go build -o bin/strillone cmd/strillone/*.go
+	go build -ldflags "-X main.Version=$(PKG_VERSION)" -o bin/strillone cmd/strillone/*.go
 
+.PHONY: clean
 clean:
 	rm bin/strillone
 
-start: build
-	overmind start
+.PHONY: test
+test:
+	go test -v ./...
 
+.PHONY: fmt
+fmt:
+	gofumpt -l -w .
+
+.PHONY: lint
 lint:
 	golangci-lint run
 
-fmt:
-	go install mvdan.cc/gofumpt@latest
-	go fmt ./...
-	gofumpt -w ./
+.PHONY: start
+start: build
+	overmind start
