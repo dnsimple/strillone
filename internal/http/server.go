@@ -2,13 +2,13 @@ package http
 
 import (
 	"fmt"
-	"github.com/dnsimple/strillone/internal/config"
 	"io"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
+	"github.com/dnsimple/strillone/internal/config"
 	"github.com/dnsimple/strillone/internal/service"
 	"github.com/julienschmidt/httprouter"
 	"github.com/wunderlist/ttlcache"
