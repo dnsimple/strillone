@@ -10,6 +10,9 @@ var (
 
 	// Program name
 	Program = "dnsimple-strillone"
+
+	// Version is replaced at compilation time
+	Version string
 )
 
 // AppConfig represents the configuration of the application.
