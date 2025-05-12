@@ -5,13 +5,13 @@ import (
 )
 
 var (
-	// Config is the global configuration
+	// Config is the global configuration.
 	Config *AppConfig
 
-	// Program name
+	// Program name.
 	Program = "dnsimple-strillone"
 
-	// Version is replaced at compilation time
+	// Version is replaced at compilation time.
 	Version string
 )
 
