@@ -19,7 +19,7 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
-	//cfg := config.LoadConfiguration()
+	// cfg := config.LoadConfiguration()
 
 	// Run the tests
 	exitCode := m.Run()

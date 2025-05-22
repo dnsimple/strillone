@@ -23,8 +23,8 @@ func init() {
 
 // Configuration holds all the environment-based configuration settings for the application.
 type Configuration struct {
-	// Port is the HTTP port the server listens on.
-	Port string `env:"PORT" envDefault:"4000"`
+	WebServerHost string `env:"WEB_SERVER_HOST"` // Defaults to http.Server default.
+	WebServerPort string `env:"WEB_SERVER_PORT" envDefault:"4000"`
 	// DNSimpleURL is the DNSimple app URL.
 	DNSimpleURL string `env:"DNSIMPLE_URL" envDefault:"https://dnsimple.com"`
 }

@@ -70,6 +70,13 @@ Use this newly created URL when setting up your webhook in DNSimple:
 - Either through the [DNSimple dashboard](https://support.dnsimple.com/articles/webhooks/)
 - Or via the [DNSimple API](https://developer.dnsimple.com/v2/webhooks/webhooks/)
 
+## Configuration
+
+| Name            | Type    | Default         | Description                           |
+|-----------------|---------|-----------------|---------------------------------------|
+| WEB_SERVER_HOST | String  | `"0.0.0.0"`     | The HTTP host the service binds to.   |
+| WEB_SERVER_PORT | String  | `"4000"`        | The HTTP port the service listens on. |
+
 ## About the name
 
 The word [strillone](https://en.wiktionary.org/wiki/strillone) (literally _someone who shouts a lot_, in practice the equivalent of _newspaper boy_) comes from Italian and it refers to the newspaper sellers in the street, who were used to yell the titles in the front page to catch the attention and sell more newspapers.

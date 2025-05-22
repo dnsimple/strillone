@@ -13,7 +13,7 @@ func main() {
 
 	log.Printf("Starting %s/%s", config.Program, config.Version)
 
-	addr := ":" + config.Config.Port
+	addr := config.Config.WebServerHost + ":" + config.Config.WebServerPort
 	log.Printf("WebServer listening on %s...\n", addr)
 	if err := http.ListenAndServe(addr, server); err != nil {
 		log.Fatal(err)
