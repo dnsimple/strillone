@@ -1,14 +1,12 @@
 package http_test
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/dnsimple/strillone/internal/config"
 	appServer "github.com/dnsimple/strillone/internal/http"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
@@ -21,13 +19,7 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
-	// Load configuration here
-	// This ensures configuration is available before any tests run
-	cfg, err := config.NewConfig()
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
-	config.Config = cfg
+	//cfg := config.LoadConfiguration()
 
 	// Run the tests
 	exitCode := m.Run()

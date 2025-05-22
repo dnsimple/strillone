@@ -2,24 +2,16 @@ package service_test
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"testing"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple/webhook"
-	"github.com/dnsimple/strillone/internal/config"
 	xservice "github.com/dnsimple/strillone/internal/service"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	// Load configuration here
-	// This ensures configuration is available before any tests run
-	cfg, err := config.NewConfig()
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
-	config.Config = cfg
+	//cfg := config.LoadConfiguration()
 
 	// Run the tests
 	exitCode := m.Run()

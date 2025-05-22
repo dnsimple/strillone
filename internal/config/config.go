@@ -1,6 +1,8 @@
 package config
 
 import (
+	"log"
+
 	"github.com/caarlos0/env/v11"
 )
 
@@ -15,6 +17,10 @@ var (
 	Version string
 )
 
+func init() {
+	Config = LoadConfiguration()
+}
+
 // Configuration holds all the environment-based configuration settings for the application.
 type Configuration struct {
 	// Port is the HTTP port the server listens on.
@@ -23,11 +29,13 @@ type Configuration struct {
 	DNSimpleURL string `env:"DNSIMPLE_URL" envDefault:"https://dnsimple.com"`
 }
 
-// NewConfig returns a new Configuration instance.
-func NewConfig() (*Configuration, error) {
+// LoadConfiguration loads environment variables into a Configuration struct.
+// If parsing fails, it logs a fatal error and exits the program.
+func LoadConfiguration() *Configuration {
 	cfg := &Configuration{}
 	if err := env.Parse(cfg); err != nil {
-		return nil, err
+		log.Fatal("Cannot parse environment configuration")
 	}
-	return cfg, nil
+
+	return cfg
 }
