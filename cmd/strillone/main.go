@@ -9,16 +9,13 @@ import (
 )
 
 func main() {
-	cfg, err := config.NewConfig()
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
-	config.Config = cfg
-
 	server := xhttp.NewServer()
 
-	log.Printf("%s listening on %s...\n", config.Program, cfg.Port)
-	if err := http.ListenAndServe(":"+cfg.Port, server); err != nil {
-		log.Fatal(err.Error())
+	log.Printf("Starting %s/%s", config.Program, config.Version)
+
+	addr := config.Config.WebServerHost + ":" + config.Config.WebServerPort
+	log.Printf("WebServer listening on %s...\n", addr)
+	if err := http.ListenAndServe(addr, server); err != nil {
+		log.Fatal(err)
 	}
 }
