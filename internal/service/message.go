@@ -140,6 +140,13 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s renewed whois privacy for the domain %s", prefix, domainLink)
 		}
 
+	case *webhook.ZoneEventData:
+		zoneDisplay := data.Zone.Name
+		zoneLink := s.FormatLink(zoneDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Zone.Name))
+		if e.Name == "zone.delete" {
+			text = fmt.Sprintf("%s deleted the zone %s", prefix, zoneLink)
+		}
+
 	case *webhook.ZoneRecordEventData:
 		zoneRecordDisplay := fmt.Sprintf("%s %s.%s %s", data.ZoneRecord.Type, data.ZoneRecord.Name, data.ZoneRecord.ZoneID, data.ZoneRecord.Content)
 		zoneRecordLink := s.FormatLink(zoneRecordDisplay, FmtURL("/a/%d/domains/%s/records/%d", account.ID, data.ZoneRecord.ZoneID, data.ZoneRecord.ID))
