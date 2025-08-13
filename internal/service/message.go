@@ -143,8 +143,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 	case *webhook.ZoneEventData:
 		zoneDisplay := data.Zone.Name
 		zoneLink := s.FormatLink(zoneDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Zone.Name))
-		switch e.Name {
-		case "zone.delete":
+		if e.Name == "zone.delete" {
 			text = fmt.Sprintf("%s deleted the zone %s", prefix, zoneLink)
 		}
 
