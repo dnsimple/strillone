@@ -36,6 +36,18 @@ func (*TestMessagingService) PostEvent(_ *webhook.Event) (string, error) {
 	return "ok", nil
 }
 
+func Test_Message(t *testing.T) {
+	t.Run("unknown event", func(t *testing.T) {
+		service := NewTestMessagingService("dummyMessagingService")
+		account := webhook.Account{Identifier: "ID", Display: "john.doe@gmail.com"}
+		actor := webhook.Actor{Pretty: "john.doe@email.com"}
+		event := webhook.Event{Actor: &actor, Account: &account, Name: "event.name"}
+
+		result := xservice.Message(service, &event)
+		assert.Equal(t, "[<john.doe@gmail.com|https://dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result)
+	})
+}
+
 func Test_Message_AccountUserInviteEvent(t *testing.T) {
 	service := NewTestMessagingService("dummyMessagingService")
 	payload := `{
@@ -156,14 +168,29 @@ func Test_Message_DomainTransferLockEnableEvent(t *testing.T) {
 	assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com enabled transfer lock for the domain <example.com|https://dnsimple.com/a/1010/domains/example.com>", result)
 }
 
-func Test_Message_DefaultMessage(t *testing.T) {
-	service := NewTestMessagingService("dummyMessagingService")
-	account := webhook.Account{Identifier: "ID", Display: "john.doe@gmail.com"}
-	actor := webhook.Actor{Pretty: "john.doe@email.com"}
-	event := webhook.Event{Actor: &actor, Account: &account, Name: "event.name"}
+func Test_Message_ZoneEventData(t *testing.T) {
+	t.Run("zone.delete", func(t *testing.T) {
+		service := NewTestMessagingService("dummyMessagingService")
+		payload := `{
+			"name": "zone.delete",
+			"actor": {"pretty": "john.doe@email.com"},
+			"account": {"id": 1010, "display": "example-account", "identifier": "example-account@email.com"},
+			"data": {
+				"zone": {
+					"id": 12345,
+					"name": "example.com",
+					"account_id": 1010,
+					"created_at": "2023-03-02T02:39:18Z",
+					"updated_at": "2023-08-31T06:46:48Z"
+				}
+			}
+		}`
+		event, err := webhook.ParseEvent([]byte(payload))
+		assert.NoError(t, err)
 
-	result := xservice.Message(service, &event)
-	assert.Equal(t, "[<john.doe@gmail.com|https://dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result)
+		result := xservice.Message(service, event)
+		assert.Equal(t, "[<example-account|https://dnsimple.com/a/1010/account>] john.doe@email.com deleted the zone <example.com|https://dnsimple.com/a/1010/domains/example.com>", result)
+	})
 }
 
 func Test_fmtURL(t *testing.T) {
