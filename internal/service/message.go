@@ -54,6 +54,22 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
 
+	case *webhook.DNSSECEventData:
+		dsr := data.DelegationSignerRecord
+		domainLink := s.FormatLink(fmt.Sprintf("Domain %d", dsr.DomainID), FmtURL("/a/%d/domains/%d", account.ID, dsr.DomainID))
+		switch e.Name {
+		case "dnssec.create":
+			text = fmt.Sprintf("%s enabled DNSSEC for the domain %s", prefix, domainLink)
+		case "dnssec.delete":
+			text = fmt.Sprintf("%s disabled DNSSEC for the domain %s", prefix, domainLink)
+		case "dnssec.rotation_start":
+			text = fmt.Sprintf("%s started DNSSEC key rotation for the domain %s", prefix, domainLink)
+		case "dnssec.rotation_complete":
+			text = fmt.Sprintf("%s completed DNSSEC key rotation for the domain %s", prefix, domainLink)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
+		}
+
 	case *webhook.DomainEventData:
 		domainDisplay := data.Domain.Name
 		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
