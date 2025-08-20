@@ -7,7 +7,7 @@ go 1.24.4
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1
-	github.com/dnsimple/dnsimple-go v1.7.0
+	github.com/dnsimple/dnsimple-go/v5 v5.0.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/slack-go/slack v0.17.3
 	github.com/stretchr/testify v1.10.0
@@ -20,6 +20,6 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	golang.org/x/oauth2 v0.28.0 // indirect
+	golang.org/x/oauth2 v0.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
