@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dnsimple/dnsimple-go/v5/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v6/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
 )
 

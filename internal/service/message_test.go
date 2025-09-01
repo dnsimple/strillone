@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dnsimple/dnsimple-go/v5/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v6/dnsimple/webhook"
 	xservice "github.com/dnsimple/strillone/internal/service"
 	"github.com/stretchr/testify/assert"
 )
