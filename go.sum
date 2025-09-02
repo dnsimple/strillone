@@ -2,8 +2,8 @@ github.com/caarlos0/env/v11 v11.3.1 h1:cArPWC15hWmEt+gWk7YBi7lEXTXCvpaSdCiZE2X5m
 github.com/caarlos0/env/v11 v11.3.1/go.mod h1:qupehSf/Y0TUTsxKywqRt/vJjN5nz6vauiYEUUr8P4U=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dnsimple/dnsimple-go/v5 v5.0.0 h1:uRncBLZxYXTyUbSBbUwcyJG6d6lNZw9JoMpO3dZVN6U=
-github.com/dnsimple/dnsimple-go/v5 v5.0.0/go.mod h1:KztNfr/vJ3VG1jBi7Pq796ZgysADnnMGZe2Gn4CNY1U=
+github.com/dnsimple/dnsimple-go/v6 v6.0.1 h1:/5fGMoYNZqNHyX9sX9Vn9/TofEZkWHaAytGojXpGWPc=
+github.com/dnsimple/dnsimple-go/v6 v6.0.1/go.mod h1:yZevnOHifG0jpC3Mfr1M0U2qiwEC82byrRzLzsKA2hU=
 github.com/go-test/deep v1.1.1 h1:0r/53hagsehfO4bzD2Pgr/+RgHqhmf+k1Bpse2cTu1U=
 github.com/go-test/deep v1.1.1/go.mod h1:5C2ZWiW0ErCdrYzpqxLbTX7MG14M9iiw8DgHncVwcsE=
 github.com/google/go-cmp v0.5.2 h1:X2ev0eStA3AbceY54o37/0PQ/UWqKEiiO2dKL5OPaFM=

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dnsimple/dnsimple-go/v5/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v6/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
 )
 
@@ -50,6 +50,22 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s updated the contact %s", prefix, contactLink)
 		case "contact.delete":
 			text = fmt.Sprintf("%s deleted the contact %s", prefix, contactLink)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
+		}
+
+	case *webhook.DNSSECEventData:
+		zoneDisplay := data.Zone.Name
+		zoneLink := s.FormatLink(zoneDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Zone.Name))
+		switch e.Name {
+		case "dnssec.create":
+			text = fmt.Sprintf("%s enabled DNSSEC for the zone %s", prefix, zoneLink)
+		case "dnssec.delete":
+			text = fmt.Sprintf("%s disabled DNSSEC for the zone %s", prefix, zoneLink)
+		case "dnssec.rotation_start":
+			text = fmt.Sprintf("%s started DNSSEC key rotation for the zone %s", prefix, zoneLink)
+		case "dnssec.rotation_complete":
+			text = fmt.Sprintf("%s completed DNSSEC key rotation for the zone %s", prefix, zoneLink)
 		default:
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
