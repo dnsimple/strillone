@@ -154,6 +154,28 @@ func Test_Message_DNSSECEventData(t *testing.T) {
 	})
 }
 
+func Test_Message_CertificateEventData(t *testing.T) {
+	t.Run("certificate.issue", func(t *testing.T) {
+		service := NewTestMessagingService("dummyMessagingService")
+		payload := `{"data": {"certificate": {"id": 12345, "domain_id": 67890, "common_name": "example.com", "state": "issued", "auto_renew": false, "created_at": "2023-09-20T14:30:19Z", "updated_at": "2023-09-20T14:30:19Z"}}, "name": "certificate.issue", "actor": {"id": "2", "entity": "user", "pretty": "simone.carletti@dnsimple.com"}, "account": {"id": 625, "display": "Webhook Tests", "identifier": "webhooks@example.com"}, "api_version": "v2", "request_identifier": "e3e3d10b-b0cd-498c-9fb6-9afdb44fd19a"}`
+		event, err := webhook.ParseEvent([]byte(payload))
+		assert.NoError(t, err)
+
+		result := xservice.Message(service, event)
+		assert.Equal(t, "[<Webhook Tests|https://dnsimple.com/a/625/account>] simone.carletti@dnsimple.com issued the certificate <example.com|https://dnsimple.com/a/625/domains/67890/certificates/12345>", result)
+	})
+
+	t.Run("certificate.remove_private_key", func(t *testing.T) {
+		service := NewTestMessagingService("dummyMessagingService")
+		payload := `{"data": {"certificate": {"id": 12345, "domain_id": 67890, "common_name": "example.com", "state": "issued", "auto_renew": false, "created_at": "2023-09-20T14:30:19Z", "updated_at": "2023-09-20T14:30:19Z"}}, "name": "certificate.remove_private_key", "actor": {"id": "2", "entity": "user", "pretty": "simone.carletti@dnsimple.com"}, "account": {"id": 625, "display": "Webhook Tests", "identifier": "webhooks@example.com"}, "api_version": "v2", "request_identifier": "e3e3d10b-b0cd-498c-9fb6-9afdb44fd19a"}`
+		event, err := webhook.ParseEvent([]byte(payload))
+		assert.NoError(t, err)
+
+		result := xservice.Message(service, event)
+		assert.Equal(t, "[<Webhook Tests|https://dnsimple.com/a/625/account>] simone.carletti@dnsimple.com deleted the private key for the certificate <example.com|https://dnsimple.com/a/625/domains/67890/certificates/12345>", result)
+	})
+}
+
 func Test_Message_ZoneEventData(t *testing.T) {
 	t.Run("zone.delete", func(t *testing.T) {
 		service := NewTestMessagingService("dummyMessagingService")
