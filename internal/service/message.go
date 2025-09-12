@@ -34,6 +34,8 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		certificateDisplay := certificate.CommonName
 		certificateLink := s.FormatLink(certificateDisplay, FmtURL("/a/%d/domains/%d/certificates/%d", account.ID, certificate.DomainID, certificate.ID))
 		switch e.Name {
+		case "certificate.issue":
+			text = fmt.Sprintf("%s issued the certificate %s", prefix, certificateLink)
 		case "certificate.remove_private_key":
 			text = fmt.Sprintf("%s deleted the private key for the certificate %s", prefix, certificateLink)
 		default:
