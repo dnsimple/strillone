@@ -181,7 +181,7 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 	}
 
-	return
+	return text
 }
 
 func eventRequestID(e *webhook.Event) string {

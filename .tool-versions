@@ -1,1 +1,2 @@
-golang 1.24.4
+# Update also: go.mod, Dockerfile
+golang 1.25.2
