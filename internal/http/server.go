@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dnsimple/dnsimple-go/v6/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
 	"github.com/dnsimple/strillone/internal/service"
 	"github.com/julienschmidt/httprouter"
