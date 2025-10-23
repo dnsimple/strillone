@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dnsimple/dnsimple-go/v6/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
 	xservice "github.com/dnsimple/strillone/internal/service"
 	"github.com/stretchr/testify/assert"
 )
@@ -87,6 +87,16 @@ func Test_Message_AccountEventData(t *testing.T) {
 
 		result := xservice.Message(service, event)
 		assert.Equal(t, "john.doe@email.com removed jane.doe@email.com from account <12345|https://dnsimple.com/a/12345/account/members>", result)
+	})
+
+	t.Run("account.sso_user_add", func(t *testing.T) {
+		service := NewTestMessagingService("dummyMessagingService")
+		payload := `{"data": {"user": {"id": 1111, "email": "xxxxx@xxxxxx.xxx", "created_at": "2025-09-16T22:12:34Z", "updated_at": "2025-09-18T10:46:19Z"}, "account": {"id": 4, "email": "yyyyy@yyyyyy.yyy", "created_at": "2025-08-13T23:09:47Z", "updated_at": "2025-08-13T23:10:05Z", "plan_identifier": "teams-v2-monthly"}, "account_identity_provider": {"organization_identifier": "51fae1e9-ce56-4df2-8364-cdab573027aa"}}, "name": "account.sso_user_add", "actor": {"id": "", "entity": "dnsimple", "pretty": "support@dnsimple.com"}, "account": {"id": 4, "display": "Personal", "identifier": "xxxxxx"}, "api_version": "v2", "request_identifier": "4aedf8d3-f93d-4a42-99d9-ec20c9349358"}`
+		event, err := webhook.ParseEvent([]byte(payload))
+		assert.NoError(t, err)
+
+		result := xservice.Message(service, event)
+		assert.Equal(t, "support@dnsimple.com added xxxxx@xxxxxx.xxx to account <4|https://dnsimple.com/a/4/account/members> via SSO", result)
 	})
 }
 

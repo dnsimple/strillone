@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dnsimple/dnsimple-go/v6/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
 )
 
@@ -25,6 +25,15 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s rejected invitation to account %s", e.Actor.Pretty, membersLink)
 		case "account.user_remove":
 			text = fmt.Sprintf("%s removed %s from account %s", e.Actor.Pretty, data.User.Email, membersLink)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
+		}
+
+	case *webhook.AccountSsoEventData:
+		membersLink := s.FormatLink(fmt.Sprintf("%d", data.Account.ID), FmtURL("/a/%d/account/members", data.Account.ID))
+		switch e.Name {
+		case "account.sso_user_add":
+			text = fmt.Sprintf("%s added %s to account %s via SSO", e.Actor.Pretty, data.User.Email, membersLink)
 		default:
 			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}

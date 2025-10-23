@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dnsimple/dnsimple-go/v6/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
 	"github.com/slack-go/slack"
 )
 
