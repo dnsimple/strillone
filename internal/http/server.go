@@ -10,7 +10,6 @@ import (
 	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
 	"github.com/dnsimple/strillone/internal/service"
-	"github.com/julienschmidt/httprouter"
 	"github.com/wunderlist/ttlcache"
 )
 
@@ -21,7 +20,7 @@ const (
 
 // Server represents a front-end web server.
 type Server struct {
-	mux          *httprouter.Router
+	mux          *http.ServeMux
 	webhookCache *ttlcache.Cache
 }
 
@@ -29,14 +28,14 @@ type Server struct {
 func NewServer() *Server {
 	cache := ttlcache.NewCache(cacheTTL * time.Second)
 
-	router := httprouter.New()
+	mux := http.NewServeMux()
 	server := &Server{
-		mux:          router,
+		mux:          mux,
 		webhookCache: cache,
 	}
 
-	router.GET("/", server.Root)
-	router.POST("/slack/:slackAlpha/:slackBeta/:slackGamma", server.Slack)
+	mux.Handle("GET /", http.HandlerFunc(server.Root))
+	mux.Handle("POST /slack/{slackAlpha}/{slackBeta}/{slackGamma}", http.HandlerFunc(server.Slack))
 	return server
 }
 
@@ -47,7 +46,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Root is the handler for the HTTP requests to /.
 // It returns a simple uptime message useful for monitoring.
-func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
@@ -55,7 +54,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 }
 
 // Slack handles a request to publish a webhook to a Slack channel.
-func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
 
 	if r.Method != "POST" {
@@ -86,7 +85,9 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request, params httprouter
 		return
 	}
 
-	slackAlpha, slackBeta, slackGamma := params.ByName("slackAlpha"), params.ByName("slackBeta"), params.ByName("slackGamma")
+	slackAlpha := r.PathValue("slackAlpha")
+	slackBeta := r.PathValue("slackBeta")
+	slackGamma := r.PathValue("slackGamma")
 	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 
 	service := &service.SlackService{Token: slackToken}

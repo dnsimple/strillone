@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	appServer "github.com/dnsimple/strillone/internal/http"
-	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +31,7 @@ func TestRoot(t *testing.T) {
 	request, _ := http.NewRequest("GET", "/", nil)
 	response := httptest.NewRecorder()
 
-	server.Root(response, request, httprouter.Params{})
+	server.Root(response, request)
 
 	if want := http.StatusOK; want != response.Code {
 		t.Errorf("GET / expected HTTP %v, got %v", want, response.Code)
@@ -44,10 +43,13 @@ func TestRoot(t *testing.T) {
 
 func TestSlack(t *testing.T) {
 	payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "hosted", "token": "domain-token", "account_id": 1010, "auto_renew": false, "created_at": "2016-02-07T14:46:29.142Z", "expires_on": null, "updated_at": "2016-02-07T14:46:29.142Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": null}}, "actor": {"id": "1", "entity": "user", "pretty": "example@example.com"}, "account": {"id": 1010, "display": "User", "identifier": "user"}, "name": "domain.create", "api_version": "v2", "request_identifier": "096bfc29-2bf0-40c6-991b-f03b1f8521f1"}`
-	request, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
+	request, _ := http.NewRequest("POST", "/slack/1/-/-", strings.NewReader(payload))
+	request.SetPathValue("slackAlpha", "1")
+	request.SetPathValue("slackBeta", "-")
+	request.SetPathValue("slackGamma", "-")
 	response := httptest.NewRecorder()
 
-	server.Slack(response, request, httprouter.Params{})
+	server.Slack(response, request)
 
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, "[<https://dnsimple.com/a/1010/account|User>] example@example.com created the domain <https://dnsimple.com/a/1010/domains/example.com|example.com>\n", response.Body.String())
@@ -55,20 +57,26 @@ func TestSlack(t *testing.T) {
 
 func TestSlackTwice(t *testing.T) {
 	payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "hosted", "token": "domain-token", "account_id": 1010, "auto_renew": false, "created_at": "2016-02-07T14:46:29.142Z", "expires_on": null, "updated_at": "2016-02-07T14:46:29.142Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": null}}, "actor": {"id": "1", "entity": "user", "pretty": "example@example.com"}, "account": {"id": 1010, "display": "User", "identifier": "user"}, "name": "domain.create", "api_version": "v2", "request_identifier": "096bfc29-2bf0-40c6-0000-f03b1f8521f1"}`
-	request, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
+	request, _ := http.NewRequest("POST", "/slack/1/-/-", strings.NewReader(payload))
+	request.SetPathValue("slackAlpha", "1")
+	request.SetPathValue("slackBeta", "-")
+	request.SetPathValue("slackGamma", "-")
 	response := httptest.NewRecorder()
 
-	server.Slack(response, request, httprouter.Params{})
+	server.Slack(response, request)
 
 	if want := http.StatusOK; want != response.Code {
 		t.Errorf("POST /slack expected HTTP %v, got %v", want, response.Code)
 	}
 	assert.Empty(t, response.Header().Get(appServer.HeaderProcessingStatus))
 
-	requestDuplicate, _ := http.NewRequest("POST", "/slack/-/-/-", strings.NewReader(payload))
+	requestDuplicate, _ := http.NewRequest("POST", "/slack/1/-/-", strings.NewReader(payload))
+	requestDuplicate.SetPathValue("slackAlpha", "1")
+	requestDuplicate.SetPathValue("slackBeta", "-")
+	requestDuplicate.SetPathValue("slackGamma", "-")
 	responseDuplicate := httptest.NewRecorder()
 
-	server.Slack(responseDuplicate, requestDuplicate, httprouter.Params{})
+	server.Slack(responseDuplicate, requestDuplicate)
 
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, "skipped;already-processed", responseDuplicate.Header().Get(appServer.HeaderProcessingStatus))
