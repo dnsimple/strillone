@@ -85,9 +85,9 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slackAlpha := http.PathValue(r, "slackAlpha")
-	slackBeta := http.PathValue(r, "slackBeta")
-	slackGamma := http.PathValue(r, "slackGamma")
+	slackAlpha := r.PathValue("slackAlpha")
+	slackBeta := r.PathValue("slackBeta")
+	slackGamma := r.PathValue("slackGamma")
 	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 
 	service := &service.SlackService{Token: slackToken}
