@@ -1,25 +1,10 @@
 # Contributing
 
-## Getting Started
+Before you start, review the DNSimple [Go Projects](https://dnsimple.atlassian.net/wiki/spaces/DEV/pages/440139826/Go+Projects) documentation and setup your environment accordingly.
 
-Clone the repository and move into it:
+## Go version and dependency management
 
-```shell
-git clone git@github.com:dnsimple/strillone.git
-cd strillone
-```
-
-Install standard Go development tooling:
-
-```shell
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-```
-
-Install standard Application development tooling:
-
-```shell
-brew install overmind
-```
+Refer to the [Go Projects](https://dnsimple.atlassian.net/wiki/spaces/DEV/pages/440139826/Go+Projects) documentation for our Go version policies and dependency management.
 
 ## Compilation
 
@@ -40,15 +25,3 @@ make test
 ```shell
 make start
 ```
-
-## Go standard tooling
-
-[Go Development Tooling Wiki](https://dnsimple.atlassian.net/wiki/spaces/DEV/pages/440139826/Go+Projects)
-
-## Go version management
-
-The current Go version is defined in the `.tool-versions` file. Contributors are expected to use `asdf` to install and manage Go running environments.
-
-## Dependency management
-
-Dependencies are managed using [Go modules](https://github.com/golang/go/wiki/Modules). Learn how to [update the dependencies](https://go.dev/wiki/Modules).
