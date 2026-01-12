@@ -187,14 +187,24 @@ func Test_Message_DNSSECEventData(t *testing.T) {
 }
 
 func Test_Message_ZoneEventData(t *testing.T) {
-	t.Run("zone.delete", func(t *testing.T) {
+	t.Run("zone.create", func(t *testing.T) {
 		service := NewTestMessagingService("dummyMessagingService")
-		payload := `{"name": "zone.delete", "actor": {"pretty": "john.doe@email.com"}, "account": {"id": 1010, "display": "example-account", "identifier": "example-account@email.com"}, "data": {"zone": {"id": 12345, "name": "example.com", "account_id": 1010, "created_at": "2023-03-02T02:39:18Z", "updated_at": "2023-08-31T06:46:48Z"}}}`
+		payload := `{"data": {"zone": {"id": 360322, "name": "example.zone", "reverse": false, "account_id": 123, "created_at": "2018-11-04T20:51:45Z", "updated_at": "2018-11-04T20:51:45Z"}}, "name": "zone.create", "actor": {"id": "1120", "entity": "user", "pretty": "hello@example.com"}, "account": {"id": 123, "display": "Personal", "identifier": "foobar"}, "api_version": "v2", "request_identifier": "154dff3d-4b31-496a-9f39-a8a2b57bad9b"}`
 		event, err := webhook.ParseEvent([]byte(payload))
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<example-account|https://dnsimple.com/a/1010/account>] john.doe@email.com deleted the zone <example.com|https://dnsimple.com/a/1010/domains/example.com>", result)
+		assert.Equal(t, "[<Personal|https://dnsimple.com/a/123/account>] hello@example.com created the zone <example.zone|https://dnsimple.com/a/123/domains/example.zone>", result)
+	})
+
+	t.Run("zone.delete", func(t *testing.T) {
+		service := NewTestMessagingService("dummyMessagingService")
+		payload := `{"data": {"zone": {"id": 360320, "name": "example.zone", "reverse": false, "account_id": 123, "created_at": "2018-11-04T20:51:12Z", "updated_at": "2018-11-04T20:51:12Z"}}, "name": "zone.delete", "actor": {"id": "1120", "entity": "user", "pretty": "hello@example.com"}, "account": {"id": 123, "display": "Personal", "identifier": "foobar"}, "api_version": "v2", "request_identifier": "0c783469-92c7-4819-90b6-62ef7785abc5"}`
+		event, err := webhook.ParseEvent([]byte(payload))
+		assert.NoError(t, err)
+
+		result := xservice.Message(service, event)
+		assert.Equal(t, "[<Personal|https://dnsimple.com/a/123/account>] hello@example.com deleted the zone <example.zone|https://dnsimple.com/a/123/domains/example.zone>", result)
 	})
 }
 
