@@ -10,6 +10,21 @@ import (
 	"strings"
 )
 
+// SetupDefault configures the default slog logger from the LOG_LEVEL
+// environment variable and emits a confirmation log line at info level.
+//
+// Intended to be the first statement in main():
+//
+//	func main() {
+//	    logging.SetupDefault()
+//	    // ...
+//	}
+func SetupDefault() {
+	level := ParseLevel(os.Getenv("LOG_LEVEL"))
+	slog.SetDefault(New(level))
+	slog.Info("Logger initialized", "level", level.String())
+}
+
 // New returns a configured slog.Logger that writes JSON to stdout at the
 // given level. It does not mutate the global slog state — callers decide
 // whether to call slog.SetDefault on the result.

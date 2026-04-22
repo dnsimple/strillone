@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	slog.SetDefault(logging.New(logging.ParseLevel(os.Getenv("LOG_LEVEL"))))
+	logging.SetupDefault()
 	config.Config = config.LoadConfiguration()
 
 	if err := run(); err != nil {
