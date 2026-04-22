@@ -1,9 +1,11 @@
 package config
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/dnsimple/strillone/internal/logging"
 )
 
 var (
@@ -18,6 +20,10 @@ var (
 )
 
 func init() {
+	level := logging.ParseLevel(os.Getenv("LOG_LEVEL"))
+	slog.SetDefault(logging.New(level))
+	slog.Info("Logger initialized", "level", level.String())
+
 	Config = LoadConfiguration()
 }
 
@@ -33,7 +39,8 @@ type Configuration struct {
 func LoadConfiguration() *Configuration {
 	cfg := &Configuration{}
 	if err := env.Parse(cfg); err != nil {
-		log.Fatal("Cannot parse environment configuration")
+		slog.Error("Cannot parse environment configuration", logging.Err(err))
+		os.Exit(1)
 	}
 
 	return cfg

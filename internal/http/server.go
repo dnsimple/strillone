@@ -3,12 +3,13 @@ package http
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
+	"github.com/dnsimple/strillone/internal/logging"
 	"github.com/dnsimple/strillone/internal/service"
 	"github.com/wunderlist/ttlcache"
 )
@@ -47,7 +48,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Root is the handler for the HTTP requests to /.
 // It returns a simple uptime message useful for monitoring.
 func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
+	slog.Info("request", "method", r.Method, "url", r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
 	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), config.Program)
@@ -55,7 +56,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
 
 // Slack handles a request to publish a webhook to a Slack channel.
 func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
+	slog.Info("request", "method", r.Method, "url", r.URL.RequestURI())
 
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -65,21 +66,21 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("Error parsing body: %v\n", err)
+		slog.Error("Error parsing body", logging.Err(err))
 		return
 	}
 
 	event, err := webhook.ParseEvent(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("Error parsing event: %v\n", err)
+		slog.Error("Error parsing event", logging.Err(err))
 		return
 	}
 
 	// Check if the event was already processed
 	_, cacheExists := s.webhookCache.Get(event.RequestID)
 	if cacheExists {
-		log.Printf("Skipping event %v as already processed\n", event.RequestID)
+		slog.Info("Skipping event, already processed", "request_id", event.RequestID)
 		w.Header().Set(HeaderProcessingStatus, "skipped;already-processed")
 		w.WriteHeader(http.StatusOK)
 		return
@@ -94,7 +95,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 	text, err := service.PostEvent(event)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Printf("Internal Error: %v\n", err)
+		slog.Error("Internal Error", logging.Err(err))
 		return
 	}
 
