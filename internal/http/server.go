@@ -48,7 +48,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Root is the handler for the HTTP requests to /.
 // It returns a simple uptime message useful for monitoring.
 func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
-	slog.Info("request", "method", r.Method, "url", r.URL.RequestURI())
+	slog.Info("request", "http_method", r.Method, "http_url", r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
 	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), config.Program)
@@ -56,7 +56,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
 
 // Slack handles a request to publish a webhook to a Slack channel.
 func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
-	slog.Info("request", "method", r.Method, "url", r.URL.RequestURI())
+	slog.Info("request", "http_method", r.Method, "http_url", r.URL.RequestURI())
 
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
