@@ -19,14 +19,6 @@ var (
 	Version string
 )
 
-func init() {
-	level := logging.ParseLevel(os.Getenv("LOG_LEVEL"))
-	slog.SetDefault(logging.New(level))
-	slog.Info("Logger initialized", "level", level.String())
-
-	Config = LoadConfiguration()
-}
-
 // Configuration holds all the environment-based configuration settings for the application.
 type Configuration struct {
 	WebServerHost string `env:"WEB_SERVER_HOST"` // Defaults to http.Server default.
