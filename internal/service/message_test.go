@@ -6,18 +6,15 @@ import (
 	"testing"
 
 	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
+	"github.com/dnsimple/strillone/internal/config"
 	xservice "github.com/dnsimple/strillone/internal/service"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	// cfg := config.LoadConfiguration()
+	config.Config = config.LoadConfiguration()
 
-	// Run the tests
-	exitCode := m.Run()
-
-	// Exit with the same code
-	os.Exit(exitCode)
+	os.Exit(m.Run())
 }
 
 type TestMessagingService struct {

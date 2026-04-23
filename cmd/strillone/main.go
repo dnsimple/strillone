@@ -1,21 +1,31 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/dnsimple/strillone/internal/config"
 	xhttp "github.com/dnsimple/strillone/internal/http"
+	"github.com/dnsimple/strillone/internal/logging"
 )
 
 func main() {
+	logging.SetupDefault()
+	config.Config = config.LoadConfiguration()
+
+	if err := run(); err != nil {
+		slog.Error("strillone failed", logging.Err(err))
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	server := xhttp.NewServer()
 
-	log.Printf("Starting %s/%s", config.Program, config.Version)
+	slog.Info("Starting", "program", config.Program, "version", config.Version)
 
 	addr := config.Config.WebServerHost + ":" + config.Config.WebServerPort
-	log.Printf("WebServer listening on %s...\n", addr)
-	if err := http.ListenAndServe(addr, server); err != nil {
-		log.Fatal(err)
-	}
+	slog.Info("WebServer listening", "address", addr)
+	return http.ListenAndServe(addr, server)
 }
