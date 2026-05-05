@@ -206,9 +206,6 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
 		}
 
-	case *webhook.GenericEventData:
-		text = fmt.Sprintf("%s performed %s", prefix, e.Name)
-
 	default:
 		text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 	}
