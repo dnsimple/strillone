@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v9/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
 )
 
@@ -115,6 +115,21 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
 		}
 
+	case *webhook.DomainUpdateEventData:
+		domainDisplay := data.Domain.Name
+		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
+		switch e.Name {
+		case "domain.update":
+			from, to := "", ""
+			if data.StateChange != nil {
+				from = data.StateChange.From
+				to = data.StateChange.To
+			}
+			text = fmt.Sprintf("%s updated domain %s registration state from %s to %s (%s)", prefix, domainLink, from, to, data.Reason)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
+		}
+
 	case *webhook.DomainTransferLockEventData:
 		domainDisplay := data.Domain.Name
 		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
@@ -190,6 +205,9 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 		case "zone_record.delete":
 			text = fmt.Sprintf("%s deleted the record %s", prefix, zoneRecordLink)
 		}
+
+	case *webhook.GenericEventData:
+		text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 
 	default:
 		text = fmt.Sprintf("%s performed %s", prefix, e.Name)

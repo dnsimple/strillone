@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v9/dnsimple/webhook"
 	xservice "github.com/dnsimple/strillone/internal/service"
 	"github.com/stretchr/testify/assert"
 )
@@ -119,6 +119,18 @@ func Test_Message_CertificateEventData(t *testing.T) {
 
 		result := xservice.Message(service, event)
 		assert.Equal(t, "[<DNSimple|https://dnsimple.com/a/5623/account>] xxxxxx.xxxxxxx@dnsimple.com deleted the private key for the certificate <www.bingo.pizza|https://dnsimple.com/a/5623/domains/289333/certificates/101972>", result)
+	})
+}
+
+func Test_Message_DomainUpdateEventData(t *testing.T) {
+	t.Run("domain.update", func(t *testing.T) {
+		service := NewTestMessagingService("dummyMessagingService")
+		payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "registered", "account_id": 1010, "auto_renew": false, "created_at": "2023-03-02T02:39:18Z", "expires_at": "2024-03-02T02:39:22Z", "expires_on": "2024-03-02", "updated_at": "2023-08-31T06:46:48Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": 101}, "state_change": {"from": "hosted", "to": "registered"}, "reason": "registration"}, "name": "domain.update", "actor": {"id": "1010", "entity": "account", "pretty": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "account": {"id": 1010, "display": "xxxxxxx-xxxxxxx-xxxxxxx", "identifier": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "api_version": "v2", "request_identifier": "0f31483c-c303-497b-8a88-2edb48aa111e"}`
+		event, err := webhook.ParseEvent([]byte(payload))
+		assert.NoError(t, err)
+
+		result := xservice.Message(service, event)
+		assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com updated domain <example.com|https://dnsimple.com/a/1010/domains/example.com> registration state from hosted to registered (registration)", result)
 	})
 }
 
