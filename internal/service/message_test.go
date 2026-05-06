@@ -122,10 +122,10 @@ func Test_Message_CertificateEventData(t *testing.T) {
 	})
 }
 
-func Test_Message_DomainUpdateEventData(t *testing.T) {
-	t.Run("domain.update", func(t *testing.T) {
+func Test_Message_DomainStateChange(t *testing.T) {
+	t.Run("domain.state_change", func(t *testing.T) {
 		service := NewTestMessagingService("dummyMessagingService")
-		payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "registered", "account_id": 1010, "auto_renew": false, "created_at": "2023-03-02T02:39:18Z", "expires_at": "2024-03-02T02:39:22Z", "expires_on": "2024-03-02", "updated_at": "2023-08-31T06:46:48Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": 101}, "state_change": {"from": "hosted", "to": "registered"}, "reason": "registration"}, "name": "domain.update", "actor": {"id": "1010", "entity": "account", "pretty": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "account": {"id": 1010, "display": "xxxxxxx-xxxxxxx-xxxxxxx", "identifier": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "api_version": "v2", "request_identifier": "0f31483c-c303-497b-8a88-2edb48aa111e"}`
+		payload := `{"data": {"domain": {"id": 1, "name": "example.com", "state": "registered", "account_id": 1010, "auto_renew": false, "created_at": "2023-03-02T02:39:18Z", "expires_at": "2024-03-02T02:39:22Z", "expires_on": "2024-03-02", "updated_at": "2023-08-31T06:46:48Z", "unicode_name": "example.com", "private_whois": false, "registrant_id": 101}, "state_change": {"from": "hosted", "to": "registered"}, "reason": "registration"}, "name": "domain.state_change", "actor": {"id": "1010", "entity": "account", "pretty": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "account": {"id": 1010, "display": "xxxxxxx-xxxxxxx-xxxxxxx", "identifier": "xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com"}, "api_version": "v2", "request_identifier": "0f31483c-c303-497b-8a88-2edb48aa111e"}`
 		event, err := webhook.ParseEvent([]byte(payload))
 		assert.NoError(t, err)
 

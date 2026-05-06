@@ -115,11 +115,11 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
 		}
 
-	case *webhook.DomainUpdateEventData:
+	case *webhook.DomainStateChangeEventData:
 		domainDisplay := data.Domain.Name
 		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
 		switch e.Name {
-		case "domain.update":
+		case "domain.state_change":
 			from, to := "", ""
 			if data.StateChange != nil {
 				from = data.StateChange.From
