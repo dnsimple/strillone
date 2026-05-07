@@ -7,7 +7,7 @@ go 1.25.2
 
 require (
 	github.com/caarlos0/env/v11 v11.4.0
-	github.com/dnsimple/dnsimple-go/v7 v7.0.1
+	github.com/dnsimple/dnsimple-go/v9 v9.1.0
 	github.com/slack-go/slack v0.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/wunderlist/ttlcache v0.0.0-20180801091818-7dbceb0d5094
@@ -15,10 +15,10 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	golang.org/x/oauth2 v0.32.0 // indirect
+	golang.org/x/oauth2 v0.34.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
