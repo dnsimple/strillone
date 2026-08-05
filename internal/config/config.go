@@ -25,7 +25,7 @@ func init() {
 type Configuration struct {
 	WebServerHost string `env:"WEB_SERVER_HOST"` // Defaults to http.Server default.
 	WebServerPort string `env:"WEB_SERVER_PORT" envDefault:"4000"`
-	DNSimpleURL   string `env:"DNSIMPLE_URL" envDefault:"https://dnsimple.com"`
+	DNSimpleURL   string `env:"DNSIMPLE_URL" envDefault:"https://app.dnsimple.com"`
 }
 
 // LoadConfiguration loads environment variables into a Configuration struct.

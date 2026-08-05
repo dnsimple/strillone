@@ -52,7 +52,7 @@ func TestSlack(t *testing.T) {
 	server.Slack(response, request)
 
 	assert.Equal(t, http.StatusOK, response.Code)
-	assert.Equal(t, "[<https://dnsimple.com/a/1010/account|User>] example@example.com created the domain <https://dnsimple.com/a/1010/domains/example.com|example.com>\n", response.Body.String())
+	assert.Equal(t, "[<https://app.dnsimple.com/a/1010/account|User>] example@example.com created the domain <https://app.dnsimple.com/a/1010/domains/example.com|example.com>\n", response.Body.String())
 }
 
 func TestSlackTwice(t *testing.T) {
