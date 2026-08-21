@@ -44,7 +44,7 @@ func Test_Message(t *testing.T) {
 		event := webhook.Event{Actor: &actor, Account: &account, Name: "event.name"}
 
 		result := xservice.Message(service, &event)
-		assert.Equal(t, "[<john.doe@gmail.com|https://dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result)
+		assert.Equal(t, "[<john.doe@gmail.com|https://app.dnsimple.com/a/0/account>] john.doe@email.com performed event.name", result)
 	})
 }
 
@@ -56,7 +56,7 @@ func Test_Message_AccountEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "john.doe@email.com invited jane.doe@email.com to account <12345|https://dnsimple.com/a/12345/account/members>", result)
+		assert.Equal(t, "john.doe@email.com invited jane.doe@email.com to account <12345|https://app.dnsimple.com/a/12345/account/members>", result)
 	})
 
 	t.Run("account.user_invitation_accept", func(t *testing.T) {
@@ -66,7 +66,7 @@ func Test_Message_AccountEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "jane.doe@email.com accepted invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result)
+		assert.Equal(t, "jane.doe@email.com accepted invitation to account <12345|https://app.dnsimple.com/a/12345/account/members>", result)
 	})
 
 	t.Run("account.user_invitation_revoke", func(t *testing.T) {
@@ -76,7 +76,7 @@ func Test_Message_AccountEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "jane.doe@email.com rejected invitation to account <12345|https://dnsimple.com/a/12345/account/members>", result)
+		assert.Equal(t, "jane.doe@email.com rejected invitation to account <12345|https://app.dnsimple.com/a/12345/account/members>", result)
 	})
 
 	t.Run("account.user_remove", func(t *testing.T) {
@@ -86,7 +86,7 @@ func Test_Message_AccountEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "john.doe@email.com removed jane.doe@email.com from account <12345|https://dnsimple.com/a/12345/account/members>", result)
+		assert.Equal(t, "john.doe@email.com removed jane.doe@email.com from account <12345|https://app.dnsimple.com/a/12345/account/members>", result)
 	})
 
 	t.Run("account.sso_user_add", func(t *testing.T) {
@@ -96,7 +96,7 @@ func Test_Message_AccountEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "support@dnsimple.com added xxxxx@xxxxxx.xxx to account <4|https://dnsimple.com/a/4/account/members> via SSO", result)
+		assert.Equal(t, "support@dnsimple.com added xxxxx@xxxxxx.xxx to account <4|https://app.dnsimple.com/a/4/account/members> via SSO", result)
 	})
 }
 
@@ -108,7 +108,7 @@ func Test_Message_CertificateEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<DNSimple|https://dnsimple.com/a/5623/account>] support@dnsimple.com issued the certificate <www.bingo.pizza|https://dnsimple.com/a/5623/domains/289333/certificates/101967>", result)
+		assert.Equal(t, "[<DNSimple|https://app.dnsimple.com/a/5623/account>] support@dnsimple.com issued the certificate <www.bingo.pizza|https://app.dnsimple.com/a/5623/domains/289333/certificates/101967>", result)
 	})
 
 	t.Run("certificate.remove_private_key", func(t *testing.T) {
@@ -118,7 +118,7 @@ func Test_Message_CertificateEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<DNSimple|https://dnsimple.com/a/5623/account>] xxxxxx.xxxxxxx@dnsimple.com deleted the private key for the certificate <www.bingo.pizza|https://dnsimple.com/a/5623/domains/289333/certificates/101972>", result)
+		assert.Equal(t, "[<DNSimple|https://app.dnsimple.com/a/5623/account>] xxxxxx.xxxxxxx@dnsimple.com deleted the private key for the certificate <www.bingo.pizza|https://app.dnsimple.com/a/5623/domains/289333/certificates/101972>", result)
 	})
 }
 
@@ -130,7 +130,7 @@ func Test_Message_DomainStateChange(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com updated domain <example.com|https://dnsimple.com/a/1010/domains/example.com> registration state from hosted to registered (registration)", result)
+		assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://app.dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com updated domain <example.com|https://app.dnsimple.com/a/1010/domains/example.com> registration state from hosted to registered (registration)", result)
 	})
 }
 
@@ -142,7 +142,7 @@ func Test_Message_DomainEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com disabled transfer lock for the domain <example.com|https://dnsimple.com/a/1010/domains/example.com>", result)
+		assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://app.dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com disabled transfer lock for the domain <example.com|https://app.dnsimple.com/a/1010/domains/example.com>", result)
 	})
 
 	t.Run("domain.transfer_lock_enable", func(t *testing.T) {
@@ -152,7 +152,7 @@ func Test_Message_DomainEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com enabled transfer lock for the domain <example.com|https://dnsimple.com/a/1010/domains/example.com>", result)
+		assert.Equal(t, "[<xxxxxxx-xxxxxxx-xxxxxxx|https://app.dnsimple.com/a/1010/account>] xxxxxxx-xxxxxxx-xxxxxxx@xxxxx.com enabled transfer lock for the domain <example.com|https://app.dnsimple.com/a/1010/domains/example.com>", result)
 	})
 }
 
@@ -164,7 +164,7 @@ func Test_Message_DNSSECEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<Webhook Tests|https://dnsimple.com/a/625/account>] simone.carletti@dnsimple.com enabled DNSSEC for the zone <example-20230920163010.com|https://dnsimple.com/a/625/domains/example-20230920163010.com>", result)
+		assert.Equal(t, "[<Webhook Tests|https://app.dnsimple.com/a/625/account>] simone.carletti@dnsimple.com enabled DNSSEC for the zone <example-20230920163010.com|https://app.dnsimple.com/a/625/domains/example-20230920163010.com>", result)
 	})
 
 	t.Run("dnssec.delete", func(t *testing.T) {
@@ -174,7 +174,7 @@ func Test_Message_DNSSECEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<Webhook Tests|https://dnsimple.com/a/625/account>] simone.carletti@dnsimple.com disabled DNSSEC for the zone <example-20230920163010.com|https://dnsimple.com/a/625/domains/example-20230920163010.com>", result)
+		assert.Equal(t, "[<Webhook Tests|https://app.dnsimple.com/a/625/account>] simone.carletti@dnsimple.com disabled DNSSEC for the zone <example-20230920163010.com|https://app.dnsimple.com/a/625/domains/example-20230920163010.com>", result)
 	})
 
 	t.Run("dnssec.rotation_start", func(t *testing.T) {
@@ -184,7 +184,7 @@ func Test_Message_DNSSECEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<Webhook Tests|https://dnsimple.com/a/625/account>] support@dnsimple.com started DNSSEC key rotation for the zone <example-20230920163010.com|https://dnsimple.com/a/625/domains/example-20230920163010.com>", result)
+		assert.Equal(t, "[<Webhook Tests|https://app.dnsimple.com/a/625/account>] support@dnsimple.com started DNSSEC key rotation for the zone <example-20230920163010.com|https://app.dnsimple.com/a/625/domains/example-20230920163010.com>", result)
 	})
 
 	t.Run("dnssec.rotation_complete", func(t *testing.T) {
@@ -194,7 +194,7 @@ func Test_Message_DNSSECEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<Webhook Tests|https://dnsimple.com/a/625/account>] support@dnsimple.com completed DNSSEC key rotation for the zone <example-20230920163010.com|https://dnsimple.com/a/625/domains/example-20230920163010.com>", result)
+		assert.Equal(t, "[<Webhook Tests|https://app.dnsimple.com/a/625/account>] support@dnsimple.com completed DNSSEC key rotation for the zone <example-20230920163010.com|https://app.dnsimple.com/a/625/domains/example-20230920163010.com>", result)
 	})
 }
 
@@ -206,7 +206,7 @@ func Test_Message_ZoneEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<Personal|https://dnsimple.com/a/123/account>] hello@example.com created the zone <example.zone|https://dnsimple.com/a/123/domains/example.zone>", result)
+		assert.Equal(t, "[<Personal|https://app.dnsimple.com/a/123/account>] hello@example.com created the zone <example.zone|https://app.dnsimple.com/a/123/domains/example.zone>", result)
 	})
 
 	t.Run("zone.delete", func(t *testing.T) {
@@ -216,10 +216,10 @@ func Test_Message_ZoneEventData(t *testing.T) {
 		assert.NoError(t, err)
 
 		result := xservice.Message(service, event)
-		assert.Equal(t, "[<Personal|https://dnsimple.com/a/123/account>] hello@example.com deleted the zone <example.zone|https://dnsimple.com/a/123/domains/example.zone>", result)
+		assert.Equal(t, "[<Personal|https://app.dnsimple.com/a/123/account>] hello@example.com deleted the zone <example.zone|https://app.dnsimple.com/a/123/domains/example.zone>", result)
 	})
 }
 
 func Test_fmtURL(t *testing.T) {
-	assert.Equal(t, "https://dnsimple.com/a/1010/domains/1", xservice.FmtURL("/a/%v/domains/%v", "1010", 1))
+	assert.Equal(t, "https://app.dnsimple.com/a/1010/domains/1", xservice.FmtURL("/a/%v/domains/%v", "1010", 1))
 }
