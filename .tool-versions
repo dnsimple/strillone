@@ -2,4 +2,4 @@
 # - https://dnsimple.atlassian.net/wiki/spaces/DEV/pages/336658504/Strillone+dnsimple+strillone
 # - Dockerfile
 # - go.mod
-golang 1.25.2
+golang 1.27.1
