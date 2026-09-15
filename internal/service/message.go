@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dnsimple/dnsimple-go/v7/dnsimple/webhook"
+	"github.com/dnsimple/dnsimple-go/v9/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
 )
 
@@ -113,6 +113,22 @@ func Message(s MessagingService, e *webhook.Event) (text string) {
 			text = fmt.Sprintf("%s transferred the domain %s", prefix, domainLink)
 		default:
 			text = fmt.Sprintf("%s performed %s on domain %s", prefix, e.Name, domainLink)
+		}
+
+	case *webhook.DomainStateChangeEventData:
+		domainDisplay := data.Domain.Name
+		domainLink := s.FormatLink(domainDisplay, FmtURL("/a/%d/domains/%s", account.ID, data.Domain.Name))
+		switch e.Name {
+		case "domain.state_change":
+			from, to, reason := "", "", ""
+			if data.StateChange != nil {
+				from = data.StateChange.From
+				to = data.StateChange.To
+				reason = data.StateChange.Reason
+			}
+			text = fmt.Sprintf("%s updated domain %s registration state from %s to %s (%s)", prefix, domainLink, from, to, reason)
+		default:
+			text = fmt.Sprintf("%s performed %s", prefix, e.Name)
 		}
 
 	case *webhook.DomainTransferLockEventData:
