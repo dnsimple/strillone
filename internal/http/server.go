@@ -3,12 +3,13 @@ package http
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/v9/dnsimple/webhook"
 	"github.com/dnsimple/strillone/internal/config"
+	"github.com/dnsimple/strillone/internal/logging"
 	"github.com/dnsimple/strillone/internal/service"
 	"github.com/wunderlist/ttlcache"
 )
@@ -22,16 +23,18 @@ const (
 type Server struct {
 	mux          *http.ServeMux
 	webhookCache *ttlcache.Cache
+	dnsimpleURL  string
 }
 
 // NewServer returns a new front-end web server that handles HTTP requests for the app.
-func NewServer() *Server {
+func NewServer(dnsimpleURL string) *Server {
 	cache := ttlcache.NewCache(cacheTTL * time.Second)
 
 	mux := http.NewServeMux()
 	server := &Server{
 		mux:          mux,
 		webhookCache: cache,
+		dnsimpleURL:  dnsimpleURL,
 	}
 
 	mux.Handle("GET /", http.HandlerFunc(server.Root))
@@ -47,7 +50,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Root is the handler for the HTTP requests to /.
 // It returns a simple uptime message useful for monitoring.
 func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
+	slog.Info("Received request", "http_method", r.Method, "http_url", r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
 	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), config.Program)
@@ -55,31 +58,29 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
 
 // Slack handles a request to publish a webhook to a Slack channel.
 func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s %s\n", r.Method, r.URL.RequestURI())
-
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
+	// The URL path contains the Slack token.
+	slog.Info("Received request", "http_method", r.Method)
 
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("Error parsing body: %v\n", err)
+		slog.Warn("Error parsing body", logging.Err(err))
 		return
 	}
 
 	event, err := webhook.ParseEvent(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Printf("Error parsing event: %v\n", err)
+		slog.Warn("Error parsing event", logging.Err(err))
 		return
 	}
+
+	logger := slog.With("request_id", event.RequestID)
 
 	// Check if the event was already processed
 	_, cacheExists := s.webhookCache.Get(event.RequestID)
 	if cacheExists {
-		log.Printf("Skipping event %v as already processed\n", event.RequestID)
+		logger.Info("Skipping event, already processed")
 		w.Header().Set(HeaderProcessingStatus, "skipped;already-processed")
 		w.WriteHeader(http.StatusOK)
 		return
@@ -90,11 +91,15 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 	slackGamma := r.PathValue("slackGamma")
 	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 
-	service := &service.SlackService{Token: slackToken}
-	text, err := service.PostEvent(event)
+	slackService := &service.SlackService{Token: slackToken, DNSimpleURL: s.dnsimpleURL}
+	text, err := slackService.PostEvent(event)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Printf("Internal Error: %v\n", err)
+		level := slog.LevelError
+		if service.IsClientError(err) {
+			level = slog.LevelWarn
+		}
+		logger.Log(r.Context(), level, "Error sending to slack", logging.Err(err))
 		return
 	}
 

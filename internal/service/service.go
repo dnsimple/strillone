@@ -2,8 +2,9 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -20,7 +21,8 @@ type MessagingService interface {
 
 // SlackService represents the Slack message service.
 type SlackService struct {
-	Token string
+	Token       string
+	DNSimpleURL string
 }
 
 // FormatLink implements MessagingService
@@ -33,13 +35,28 @@ func (s *SlackService) FormatMessage(message string) string {
 	return message
 }
 
+// IsClientError reports whether the Slack webhook configuration causes err.
+func IsClientError(err error) bool {
+	var rateLimitedErr *slack.RateLimitedError
+	if errors.As(err, &rateLimitedErr) {
+		return true
+	}
+
+	var statusCodeErr slack.StatusCodeError
+	if errors.As(err, &statusCodeErr) {
+		return statusCodeErr.Code >= 400 && statusCodeErr.Code < 500
+	}
+
+	return false
+}
+
 // PostEvent implements MessagingService
 func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
-	eventID := eventRequestID(event)
-	text := Message(s, event)
+	logger := slog.With("request_id", eventRequestID(event))
+	text := Message(s, event, s.DNSimpleURL)
 
 	// Send the webhook to Logs
-	log.Printf("[event:%v] %s", eventID, text)
+	logger.Info("Event received", "text", text)
 
 	// Don't send to Slack
 	if s.Token[0] == '-' {
@@ -47,7 +64,7 @@ func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 	}
 
 	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s", s.Token)
-	log.Printf("[event:%v] Sending event to slack %v\n", eventID, slackWebhookURL)
+	logger.Info("Sending event to slack")
 
 	attachment := slack.Attachment{
 		Color:         "good",
@@ -66,7 +83,6 @@ func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 
 	err := slack.PostWebhook(slackWebhookURL, &msg)
 	if err != nil {
-		log.Printf("[event:%v] Error sending to slack: %v\n", eventID, err)
 		return "", err
 	}
 

@@ -13,18 +13,10 @@ import (
 
 var server *appServer.Server
 
-func init() {
-	server = appServer.NewServer()
-}
-
 func TestMain(m *testing.M) {
-	// cfg := config.LoadConfiguration()
+	server = appServer.NewServer("https://app.dnsimple.com")
 
-	// Run the tests
-	exitCode := m.Run()
-
-	// Exit with the same code
-	os.Exit(exitCode)
+	os.Exit(m.Run())
 }
 
 func TestRoot(t *testing.T) {
