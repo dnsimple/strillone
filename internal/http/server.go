@@ -61,11 +61,6 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 	// The URL path contains the Slack token.
 	slog.Info("Received request", "http_method", r.Method)
 
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -96,11 +91,15 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 	slackGamma := r.PathValue("slackGamma")
 	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 
-	service := &service.SlackService{Token: slackToken, DNSimpleURL: s.dnsimpleURL}
-	text, err := service.PostEvent(event)
+	slackService := &service.SlackService{Token: slackToken, DNSimpleURL: s.dnsimpleURL}
+	text, err := slackService.PostEvent(event)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		logger.Error("Error sending to slack", logging.Err(err))
+		level := slog.LevelError
+		if service.IsClientError(err) {
+			level = slog.LevelWarn
+		}
+		logger.Log(r.Context(), level, "Error sending to slack", logging.Err(err))
 		return
 	}
 

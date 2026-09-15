@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -32,6 +33,21 @@ func (s *SlackService) FormatLink(name, url string) string {
 // FormatMessage implements MessagingService
 func (s *SlackService) FormatMessage(message string) string {
 	return message
+}
+
+// IsClientError reports whether the Slack webhook configuration causes err.
+func IsClientError(err error) bool {
+	var rateLimitedErr *slack.RateLimitedError
+	if errors.As(err, &rateLimitedErr) {
+		return true
+	}
+
+	var statusCodeErr slack.StatusCodeError
+	if errors.As(err, &statusCodeErr) {
+		return statusCodeErr.Code >= 400 && statusCodeErr.Code < 500
+	}
+
+	return false
 }
 
 // PostEvent implements MessagingService
