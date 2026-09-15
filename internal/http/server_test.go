@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dnsimple/strillone/internal/config"
 	appServer "github.com/dnsimple/strillone/internal/http"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,8 +14,7 @@ import (
 var server *appServer.Server
 
 func TestMain(m *testing.M) {
-	config.Config = config.LoadConfiguration()
-	server = appServer.NewServer()
+	server = appServer.NewServer("https://app.dnsimple.com")
 
 	os.Exit(m.Run())
 }

@@ -9,9 +9,6 @@ import (
 )
 
 var (
-	// Config is the global configuration.
-	Config *Configuration
-
 	// Program name.
 	Program = "dnsimple-strillone"
 

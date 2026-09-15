@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/v9/dnsimple/webhook"
-	"github.com/dnsimple/strillone/internal/logging"
 	"github.com/slack-go/slack"
 )
 
@@ -21,7 +20,8 @@ type MessagingService interface {
 
 // SlackService represents the Slack message service.
 type SlackService struct {
-	Token string
+	Token       string
+	DNSimpleURL string
 }
 
 // FormatLink implements MessagingService
@@ -36,11 +36,11 @@ func (s *SlackService) FormatMessage(message string) string {
 
 // PostEvent implements MessagingService
 func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
-	eventID := eventRequestID(event)
-	text := Message(s, event)
+	logger := slog.With("request_id", eventRequestID(event))
+	text := Message(s, event, s.DNSimpleURL)
 
 	// Send the webhook to Logs
-	slog.Info(text, "event_id", eventID)
+	logger.Info("Event received", "text", text)
 
 	// Don't send to Slack
 	if s.Token[0] == '-' {
@@ -48,7 +48,7 @@ func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 	}
 
 	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s", s.Token)
-	slog.Info("Sending event to slack", "event_id", eventID, "webhook_url", slackWebhookURL)
+	logger.Info("Sending event to slack")
 
 	attachment := slack.Attachment{
 		Color:         "good",
@@ -67,7 +67,6 @@ func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 
 	err := slack.PostWebhook(slackWebhookURL, &msg)
 	if err != nil {
-		slog.Error("Error sending to slack", "event_id", eventID, logging.Err(err))
 		return "", err
 	}
 
