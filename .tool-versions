@@ -1,5 +1,5 @@
 # Update also:
-# - https://dnsimple.atlassian.net/wiki/spaces/DEV/pages/336658504/Strillone+dnsimple+strillone
+# - dnsimple wiki
 # - Dockerfile
 # - go.mod
 golang 1.27.2
