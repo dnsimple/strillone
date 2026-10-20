@@ -24,10 +24,11 @@ type Server struct {
 	mux          *http.ServeMux
 	webhookCache *ttlcache.Cache
 	dnsimpleURL  string
+	slackURL     string
 }
 
 // NewServer returns a new front-end web server that handles HTTP requests for the app.
-func NewServer(dnsimpleURL string) *Server {
+func NewServer(dnsimpleURL, slackURL string) *Server {
 	cache := ttlcache.NewCache(cacheTTL * time.Second)
 
 	mux := http.NewServeMux()
@@ -35,6 +36,7 @@ func NewServer(dnsimpleURL string) *Server {
 		mux:          mux,
 		webhookCache: cache,
 		dnsimpleURL:  dnsimpleURL,
+		slackURL:     slackURL,
 	}
 
 	mux.Handle("GET /", http.HandlerFunc(server.Root))
@@ -91,7 +93,7 @@ func (s *Server) Slack(w http.ResponseWriter, r *http.Request) {
 	slackGamma := r.PathValue("slackGamma")
 	slackToken := fmt.Sprintf("%s/%s/%s", slackAlpha, slackBeta, slackGamma)
 
-	slackService := &service.SlackService{Token: slackToken, DNSimpleURL: s.dnsimpleURL}
+	slackService := &service.SlackService{Token: slackToken, DNSimpleURL: s.dnsimpleURL, SlackURL: s.slackURL}
 	text, err := slackService.PostEvent(event)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
