@@ -14,7 +14,7 @@ import (
 var server *appServer.Server
 
 func TestMain(m *testing.M) {
-	slack := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	slack := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 	server = appServer.NewServer("https://app.dnsimple.com", slack.URL)
