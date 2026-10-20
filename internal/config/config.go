@@ -21,6 +21,7 @@ type Configuration struct {
 	WebServerHost string `env:"WEB_SERVER_HOST"` // Defaults to http.Server default.
 	WebServerPort string `env:"WEB_SERVER_PORT" envDefault:"4000"`
 	DNSimpleURL   string `env:"DNSIMPLE_URL" envDefault:"https://app.dnsimple.com"`
+	SlackURL      string `env:"SLACK_URL" envDefault:"https://hooks.slack.com/services"`
 }
 
 // LoadConfiguration loads environment variables into a Configuration struct.

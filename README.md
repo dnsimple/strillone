@@ -75,6 +75,7 @@ Use this newly created URL when setting up your webhook in DNSimple:
 | Name            | Type   | Default                     | Description                                           |
 |-----------------|--------|-----------------------------|-------------------------------------------------------|
 | DNSIMPLE_URL    | String | `"https://app.dnsimple.com"` | Dashboard link host; can be overridden per deployment. |
+| SLACK_URL       | String | `"https://hooks.slack.com/services"` | Slack incoming webhook base URL.              |
 | WEB_SERVER_HOST | String | `"0.0.0.0"`                 | The HTTP host the service binds to.                   |
 | WEB_SERVER_PORT | String | `"4000"`                    | The HTTP port the service listens on.                 |
 

@@ -23,6 +23,7 @@ type MessagingService interface {
 type SlackService struct {
 	Token       string
 	DNSimpleURL string
+	SlackURL    string
 }
 
 // FormatLink implements MessagingService
@@ -63,7 +64,7 @@ func (s *SlackService) PostEvent(event *webhook.Event) (string, error) {
 		return "", nil
 	}
 
-	slackWebhookURL := fmt.Sprintf("https://hooks.slack.com/services/%s", s.Token)
+	slackWebhookURL := fmt.Sprintf("%s/%s", s.SlackURL, s.Token)
 	logger.Info("Sending event to slack")
 
 	attachment := slack.Attachment{

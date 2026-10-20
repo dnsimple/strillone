@@ -22,7 +22,7 @@ func main() {
 }
 
 func run(cfg *config.Configuration) error {
-	server := xhttp.NewServer(cfg.DNSimpleURL)
+	server := xhttp.NewServer(cfg.DNSimpleURL, cfg.SlackURL)
 
 	addr := cfg.WebServerHost + ":" + cfg.WebServerPort
 	slog.Info("WebServer listening", "addr", addr)

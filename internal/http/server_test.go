@@ -14,9 +14,14 @@ import (
 var server *appServer.Server
 
 func TestMain(m *testing.M) {
-	server = appServer.NewServer("https://app.dnsimple.com")
+	slack := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	server = appServer.NewServer("https://app.dnsimple.com", slack.URL)
 
-	os.Exit(m.Run())
+	code := m.Run()
+	slack.Close()
+	os.Exit(code)
 }
 
 func TestRoot(t *testing.T) {
@@ -70,6 +75,6 @@ func TestSlackTwice(t *testing.T) {
 
 	server.Slack(responseDuplicate, requestDuplicate)
 
-	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, http.StatusOK, responseDuplicate.Code)
 	assert.Equal(t, "skipped;already-processed", responseDuplicate.Header().Get(appServer.HeaderProcessingStatus))
 }
