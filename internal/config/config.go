@@ -1,37 +1,54 @@
+// Package config reads the configuration of the application from the environment.
 package config
 
 import (
-	"log/slog"
+	"errors"
+	"fmt"
+	"net"
 	"os"
+	"strconv"
 
 	"github.com/caarlos0/env/v11"
-	"github.com/dnsimple/strillone/internal/logging"
 )
 
-var (
-	// Program name.
-	Program = "dnsimple-strillone"
-
-	// Version is replaced at compilation time.
-	Version string
-)
-
-// Configuration holds all the environment-based configuration settings for the application.
+// Configuration holds the settings of the application. README.md documents each variable.
 type Configuration struct {
-	WebServerHost string `env:"WEB_SERVER_HOST"` // Defaults to http.Server default.
-	WebServerPort string `env:"WEB_SERVER_PORT" envDefault:"4000"`
-	DNSimpleURL   string `env:"DNSIMPLE_URL" envDefault:"https://app.dnsimple.com"`
-	SlackURL      string `env:"SLACK_URL" envDefault:"https://hooks.slack.com/services"`
+	BindAddress string `env:"BIND_ADDRESS"` // Empty listens on all interfaces.
+	Port        int    `env:"PORT" envDefault:"4000"`
+	DNSimpleURL string `env:"DNSIMPLE_URL" envDefault:"https://app.dnsimple.com"`
+	SlackURL    string `env:"SLACK_URL" envDefault:"https://hooks.slack.com/services"`
 }
 
-// LoadConfiguration loads environment variables into a Configuration struct.
-// If parsing fails, it logs a fatal error and exits the program.
-func LoadConfiguration() *Configuration {
+// Load reads the configuration from the process environment.
+func Load() (*Configuration, error) {
+	return Parse(env.ToMap(os.Environ()))
+}
+
+// Parse reads the configuration from environ in place of the process environment.
+func Parse(environ map[string]string) (*Configuration, error) {
 	cfg := &Configuration{}
-	if err := env.Parse(cfg); err != nil {
-		slog.Error("Cannot parse environment configuration", logging.Err(err))
-		os.Exit(1)
+	if err := env.ParseWithOptions(cfg, env.Options{Environment: environ}); err != nil {
+		return nil, fmt.Errorf("parsing the environment: %w", err)
 	}
 
-	return cfg
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+// Addr returns the listen address of the HTTP server.
+func (c *Configuration) Addr() string {
+	return net.JoinHostPort(c.BindAddress, strconv.Itoa(c.Port))
+}
+
+func (c *Configuration) validate() error {
+	var errs []error
+
+	if c.Port < 1 || c.Port > 65535 {
+		errs = append(errs, errors.New("PORT must be between 1 and 65535"))
+	}
+
+	return errors.Join(errs...)
 }

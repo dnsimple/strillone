@@ -5,6 +5,7 @@ linters:
     - bodyclose
     - copyloopvar
     - errorlint
+    - forbidigo
     - gocritic
     - misspell
     - prealloc
@@ -13,6 +14,11 @@ linters:
     - testpackage
     - wastedassign
     - whitespace
+  settings:
+    forbidigo:
+      forbid:
+        - pattern: ^os\.(Getenv|LookupEnv|Environ)$
+          msg: Read the environment only in internal/config.
   exclusions:
     generated: lax
     presets:
@@ -20,6 +26,13 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - path: (^|/)internal/(config|logging)/
+        linters:
+          - forbidigo
+      - path: _test\.go$
+        linters:
+          - forbidigo
     paths:
       - third_party$
       - builtin$

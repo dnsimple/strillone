@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/v9/dnsimple/webhook"
-	"github.com/dnsimple/strillone/internal/config"
 	"github.com/dnsimple/strillone/internal/logging"
 	"github.com/dnsimple/strillone/internal/service"
+	"github.com/dnsimple/strillone/internal/version"
 	"github.com/wunderlist/ttlcache"
 )
 
@@ -55,7 +55,7 @@ func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request", "http_method", r.Method, "http_url", r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
-	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), config.Program)
+	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), version.Program)
 }
 
 // Slack handles a request to publish a webhook to a Slack channel.
