@@ -1,5 +1,6 @@
 # Secrets
 /.env
+/.env.test
 
 # Build
 /bin/strillone

@@ -8,23 +8,28 @@ import (
 	"github.com/dnsimple/strillone/internal/config"
 	xhttp "github.com/dnsimple/strillone/internal/http"
 	"github.com/dnsimple/strillone/internal/logging"
+	"github.com/dnsimple/strillone/internal/version"
 )
 
 func main() {
 	logging.SetupDefault()
-	cfg := config.LoadConfiguration()
 
-	slog.Info("Starting", "program", config.Program, "version", config.Version)
-	if err := run(cfg); err != nil {
+	slog.Info("Starting", "program", version.Program, "version", version.Version)
+	if err := run(); err != nil {
 		slog.Error("strillone failed", logging.Err(err))
 		os.Exit(1)
 	}
 }
 
-func run(cfg *config.Configuration) error {
+func run() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+
 	server := xhttp.NewServer(cfg.DNSimpleURL, cfg.SlackURL)
 
-	addr := cfg.WebServerHost + ":" + cfg.WebServerPort
+	addr := cfg.Addr()
 	slog.Info("WebServer listening", "addr", addr)
 	return http.ListenAndServe(addr, server)
 }
