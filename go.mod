@@ -6,7 +6,7 @@ module github.com/dnsimple/strillone
 go 1.27.2
 
 require (
-	github.com/caarlos0/env/v11 v11.4.1
+	github.com/caarlos0/env/v11 v11.4.2
 	github.com/dnsimple/dnsimple-go/v9 v9.2.0
 	github.com/slack-go/slack v0.30.1
 	github.com/stretchr/testify v1.12.1
