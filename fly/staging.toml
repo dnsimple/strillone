@@ -1,0 +1,40 @@
+# Strillone staging. See "Deployment" in the README.
+app = 'dnsimple-strillone-staging'
+primary_region = 'iad'
+kill_signal = 'SIGTERM'
+kill_timeout = 10
+
+[build]
+  dockerfile = '../Dockerfile'
+
+[env]
+  # Links in the Slack messages point at the sandbox dashboard.
+  DNSIMPLE_URL = 'https://app.sandbox.dnsimple.com'
+
+[deploy]
+  # Updates the machine in place. bluegreen and canary start a second machine,
+  # and the dedupe cache of webhook deliveries lives in each machine's memory.
+  strategy = 'rolling'
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  # Webhooks arrive at any time: keep the machine running.
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+
+  # A deploy waits for this check on the new machine, and fails if it does not
+  # pass.
+  [[http_service.checks]]
+    method = 'GET'
+    path = '/'
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'
+
+[[restart]]
+  policy = 'always'
