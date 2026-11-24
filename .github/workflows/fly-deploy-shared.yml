@@ -1,0 +1,549 @@
+# A copy of .github/workflows/fly-deploy.yml from the private
+# dnsimple/dnsimple-engineering repository at
+# 39e6d51f8e204dfd9baeb81a076d53eca7a8221a, used by fly-deploy.yml.
+# Strillone is public, and a public repository cannot call a private
+# repository's workflows. To update it, replace everything below this header
+# with that file at a newer commit, and change the commit above.
+#
+---
+name: Fly Deploy
+
+# Deploys an app with a staging and a production Fly.io app. Called from the
+# app's own .github/workflows/fly-deploy.yml, which owns the triggers; see
+# shared-workflows/README.md for the caller and the rules below in full.
+#
+# - Staging: every green CI run of a push to main deploys it, if that run is
+#   still the newest green CI run on main. A manual run deploys main's head, or
+#   any commit given.
+# - Production: deployed by hand. It deploys the commit staging runs, which
+#   must be on main and deployed to staging successfully. A commit given by
+#   hand is a rollback, and must have run in production before.
+# - Neither environment moves backwards on its own: an automatic staging
+#   deploy or a production promotion older than what the app runs does
+#   nothing.
+#
+# Each app runs exactly one machine, and a deploy only ever updates it in place
+# (--update-only with the rolling strategy), so it never runs a second copy of
+# the app. If the machine's host cannot take the update, Fly replaces the
+# machine, destroying the old one before it launches the new one.
+#
+# Fly builds the image from the deployed commit and tags it `git-<sha>`. A
+# deploy succeeds once the machine runs that image, is started, passes every
+# health check its fly/<environment>.toml defines, and, if the caller sets
+# `boot-log-line`, has logged that line since it last started. The outcome is a
+# `fly/<environment>` commit status. The jobs use the caller's GitHub
+# environments only for their FLY_API_TOKEN (`deployment: false`). Both
+# environments must accept runs from main only, so a workflow edited on a
+# branch cannot reach either token.
+
+on:
+  workflow_call:
+    inputs:
+      staging-app:
+        description: 'The Fly app of the staging environment'
+        required: true
+        type: string
+      production-app:
+        description: 'The Fly app of the production environment'
+        required: true
+        type: string
+      environment:
+        description: 'The environment of a manual run: staging or production. Empty for a CI run.'
+        required: false
+        type: string
+        default: ''
+      commit:
+        description: 'The commit of a manual run: full 40-character sha. Empty to deploy main (staging) or promote staging (production).'
+        required: false
+        type: string
+        default: ''
+      ci-workflow:
+        description: 'The file name of the CI workflow whose green runs deploy staging'
+        required: false
+        type: string
+        default: 'ci.yml'
+      boot-log-line:
+        description: 'A log line the app writes once it is ready. Required for an app without health checks.'
+        required: false
+        type: string
+        default: ''
+
+permissions: {}
+
+jobs:
+  resolve:
+    name: Choose what to deploy
+    # A failed CI run, or one started by a pull request, never deploys.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      environment: ${{ steps.resolve.outputs.environment }}
+      sha: ${{ steps.resolve.outputs.sha }}
+      source: ${{ steps.resolve.outputs.source }}
+    steps:
+      # source says where the commit came from: ci (an automatic deploy),
+      # given (the commit input), main (a manual staging run without one) or
+      # staging (a production promotion, read by the staging-commit job).
+      - name: Resolve the environment and commit
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_ENVIRONMENT: ${{ inputs.environment }}
+          INPUT_COMMIT: ${{ inputs.commit }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          STAGING_APP: ${{ inputs.staging-app }}
+          PRODUCTION_APP: ${{ inputs.production-app }}
+        run: |
+          set -euo pipefail
+
+          fail() {
+            echo "::error title=Nothing deployed::$1"
+            exit 1
+          }
+
+          if [ -z "${STAGING_APP}" ] || [ -z "${PRODUCTION_APP}" ] || [ "${STAGING_APP}" = "${PRODUCTION_APP}" ]; then
+            fail "staging-app and production-app must be two different Fly apps."
+          fi
+
+          environment="${INPUT_ENVIRONMENT:-staging}"
+          case "${environment}" in
+            staging | production) ;;
+            *) fail "Unknown environment '${environment}'." ;;
+          esac
+          sha=""
+          source=""
+
+          if [ "${EVENT_NAME}" = "workflow_run" ]; then
+            # A CI run only ever deploys staging. The inputs belong to manual
+            # runs, so a caller that sets them here is misconfigured.
+            if [ -n "${INPUT_ENVIRONMENT}" ] || [ -n "${INPUT_COMMIT}" ]; then
+              fail "A CI run takes no environment or commit. Pass the workflow_dispatch inputs through, as shared-workflows/README.md in dnsimple/dnsimple-engineering shows."
+            fi
+            environment="staging"
+            sha="${RUN_SHA}"
+            source="ci"
+          else
+            # The environments' branch policies protect the tokens; this
+            # explains the failure when a run is started from a branch.
+            [ "${GITHUB_REF}" = "refs/heads/main" ] || fail "Start the workflow from main. To deploy a branch to staging, pass its commit."
+            if [ -n "${INPUT_COMMIT}" ]; then
+              [[ "${INPUT_COMMIT}" =~ ^[0-9a-f]{40}$ ]] || fail "The commit must be a full 40-character lowercase sha."
+              gh api "repos/${GITHUB_REPOSITORY}/commits/${INPUT_COMMIT}" --jq .sha >/dev/null || fail "${INPUT_COMMIT} is not a commit in this repository."
+              sha="${INPUT_COMMIT}"
+              source="given"
+            elif [ "${environment}" = "staging" ]; then
+              sha="${GITHUB_SHA}"
+              source="main"
+            else
+              source="staging"
+            fi
+          fi
+
+          {
+            echo "environment=${environment}"
+            echo "sha=${sha}"
+            echo "source=${source}"
+          } >> "$GITHUB_OUTPUT"
+
+  staging-commit:
+    name: Find the commit staging runs
+    needs: resolve
+    if: needs.resolve.outputs.source == 'staging'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Only for the staging deploy token, which can read the staging app.
+    environment:
+      name: staging
+      deployment: false
+    permissions: {}
+    outputs:
+      sha: ${{ steps.find.outputs.sha }}
+    env:
+      FLY_APP: ${{ inputs.staging-app }}
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@1.6
+        with:
+          # Pinned: the guarantees above rest on how this version deploys.
+          version: 0.5.16
+
+      - name: Read the image the staging machine runs
+        id: find
+        run: |
+          set -euo pipefail
+
+          fail() {
+            echo "::error title=Cannot promote staging::$1"
+            exit 1
+          }
+
+          machines="$(timeout 60 flyctl machines list --app "${FLY_APP}" --json)" || fail "Could not list the staging machines."
+          count="$(jq 'length' <<< "${machines}")"
+          [ "${count}" -eq 1 ] || fail "Staging has ${count} machines, expected exactly one."
+          state="$(jq -r '.[0].state' <<< "${machines}")"
+          [ "${state}" = "started" ] || fail "The staging machine is ${state}, not started."
+          tag="$(jq -r '.[0].image_ref.tag // ""' <<< "${machines}")"
+          [[ "${tag}" =~ ^git-[0-9a-f]{40}$ ]] || fail "The staging machine runs image tag '${tag}', which this workflow did not build. Deploy staging first."
+
+          echo "Promoting ${tag#git-}, which staging ran at $(date -u +%FT%TZ)." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "sha=${tag#git-}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy
+    needs:
+      - resolve
+      - staging-commit
+    if: >-
+      always() &&
+      needs.resolve.result == 'success' &&
+      (needs.staging-commit.result == 'success' || needs.staging-commit.result == 'skipped')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment:
+      name: ${{ needs.resolve.outputs.environment }}
+      deployment: false
+    # On the job rather than the workflow, so runs that deploy nothing never
+    # take a slot. Queue rather than cancel: a half-applied rollout is worse
+    # than a slow one, and `queue: max` keeps every pending run instead of only
+    # the newest. Concurrency groups belong to the calling repository.
+    concurrency:
+      group: fly-deploy-${{ needs.resolve.outputs.environment }}
+      cancel-in-progress: false
+      queue: max
+    permissions:
+      actions: read
+      contents: read
+      statuses: write
+    env:
+      ENVIRONMENT: ${{ needs.resolve.outputs.environment }}
+      SHA: ${{ needs.resolve.outputs.sha || needs.staging-commit.outputs.sha }}
+      SOURCE: ${{ needs.resolve.outputs.source }}
+      FLY_APP: ${{ needs.resolve.outputs.environment == 'production' && inputs.production-app || inputs.staging-app }}
+      CI_WORKFLOW: ${{ inputs.ci-workflow }}
+      CI_RUN_ID: ${{ github.event.workflow_run.id }}
+      BOOT_LOG_LINE: ${{ inputs.boot-log-line }}
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@1.6
+        with:
+          # Pinned: the guarantees above rest on how this version deploys.
+          version: 0.5.16
+
+      # Every eligibility rule, checked here inside the concurrency slot so it
+      # still holds after the run has waited behind another deploy.
+      - name: Check the commit may be deployed
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          fail() {
+            echo "::error title=Not deployed::$1"
+            exit 1
+          }
+
+          skip() {
+            echo "::notice title=Skipped::$1"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+
+          # An API error aborts the run instead of reading as "no": each
+          # result is assigned before it is compared.
+          on_main() {
+            local status
+            status="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${SHA}...main" --jq .status)" || fail "Could not compare ${SHA} with main."
+            [ "${status}" = "ahead" ] || [ "${status}" = "identical" ]
+          }
+
+          # Sets NEWER to the commit the app runs if it descends from SHA,
+          # and to nothing otherwise.
+          read_newer() {
+            local machines tag current status
+            NEWER=""
+            machines="$(timeout 60 flyctl machines list --app "${FLY_APP}" --json)" || fail "Could not list the machines of ${FLY_APP}."
+            tag="$(jq -r '.[0].image_ref.tag // ""' <<< "${machines}")"
+            [[ "${tag}" =~ ^git-[0-9a-f]{40}$ ]] || return 0
+            current="${tag#git-}"
+            [ "${current}" != "${SHA}" ] || return 0
+            status="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${SHA}...${current}" --jq .status)" || fail "Could not compare ${SHA} with ${current}, which ${FLY_APP} runs."
+            if [ "${status}" = "ahead" ]; then
+              NEWER="${current}"
+            fi
+          }
+
+          case "${SOURCE}" in
+            ci)
+              # Runs are listed newest first by creation, and a re-run keeps
+              # its creation time and id, so only the newest green run of the
+              # CI workflow deploys, and a run of any other workflow never does.
+              newest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${CI_WORKFLOW}/runs?branch=main&event=push&status=success&per_page=1" \
+                --jq '.workflow_runs[0] // {} | "\(.id // "") \(.head_sha // "")"')"
+              [ "${newest}" = "${CI_RUN_ID} ${SHA}" ] || skip "Run ${CI_RUN_ID} of ${SHA} is not the newest green ${CI_WORKFLOW} run on main (${newest:-none}). That run deploys instead."
+              # The newest green run can still be older than what staging
+              # runs, for example after a newer commit's CI re-run failed, or
+              # after a newer commit was deployed by hand.
+              read_newer
+              [ -z "${NEWER}" ] || skip "Staging runs ${NEWER}, which is newer than ${SHA}."
+              ;;
+            staging)
+              on_main || fail "Staging runs ${SHA}, which is not on main. Deploy main to staging before promoting."
+              state="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/statuses?per_page=100" \
+                --jq '[.[] | select(.context == "fly/staging")][0].state // "none"')"
+              [ "${state}" = "success" ] || fail "The last fly/staging status for ${SHA} is ${state}, not success. Deploy it to staging again."
+              # A promotion chosen earlier, for example a failed one whose job
+              # is re-run, must not replace a newer one that went out since.
+              read_newer
+              [ -z "${NEWER}" ] || fail "Production already runs ${NEWER}, which is newer than ${SHA}. To roll back, pass the commit."
+              ;;
+            given)
+              if [ "${ENVIRONMENT}" = "production" ]; then
+                on_main || fail "${SHA} is not on main."
+                # A rollback target must have been released to production
+                # (Fly's release history, readable only with the production
+                # token, which lists the latest 25 releases) and verified
+                # there (a fly/production success). Fly records a release as
+                # complete before the app is verified, so the history alone
+                # is not enough.
+                ran="$(timeout 60 flyctl releases --app "${FLY_APP}" --json \
+                  | jq --arg tag "git-${SHA}" 'any(.[]; .Status == "complete" and (.ImageRef // "" | endswith(":" + $tag)))')"
+                verified="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/statuses?per_page=100" \
+                  --jq 'any(.[]; .context == "fly/production" and .state == "success")')"
+                if [ "${ran}" != "true" ] || [ "${verified}" != "true" ]; then
+                  fail "${SHA} never ran in production with a verified deploy. A commit given for production is a rollback; to release a new commit, deploy it to staging and promote staging. To retry a failed promotion, re-run its failed job."
+                fi
+              fi
+              ;;
+          esac
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout code
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ env.SHA }}
+          # The checkout is the build context: keep the job's token out of it.
+          persist-credentials: false
+
+      # Checked before the pending status, which a failure here would leave
+      # replaced by a failure for a commit whose deploy never started.
+      - name: Check the app has exactly one machine
+        id: machine
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          machines="$(timeout 60 flyctl machines list --app "${FLY_APP}" --json)"
+          count="$(jq 'length' <<< "${machines}")"
+          if [ "${count}" -ne 1 ]; then
+            echo "::error title=Not exactly one machine::${FLY_APP} has ${count} machines, and a deploy only updates exactly one. See \"If an app has no machine, or more than one\" in shared-workflows/README.md of dnsimple/dnsimple-engineering."
+            exit 1
+          fi
+          # Empty for a machine without a group, which flyctl puts in the
+          # config's group.
+          echo "group=$(jq -r '.[0].config.metadata.fly_process_group // ""' <<< "${machines}")" >> "$GITHUB_OUTPUT"
+
+      # The config must deploy to that one machine and nothing else. flyctl
+      # deploys to --app whatever the config says; it destroys machines whose
+      # process group the config drops, and --update-only then creates none in
+      # the new group; it strips checks meant for other groups; and machine
+      # checks run the new image on an extra, temporary machine. The config is
+      # validated and read as flyctl itself parses it (`config validate`,
+      # `config show --local`), not as TOML, so key case, repeated sections and
+      # unknown keys count as they do for flyctl, and a config flyctl would
+      # refuse fails here, before the pending status.
+      - name: Check the commit can be deployed to Fly
+        if: steps.gate.outputs.skip != 'true'
+        shell: python3 {0}
+        env:
+          MACHINE_GROUP: ${{ steps.machine.outputs.group }}
+        run: |
+          import json, os, subprocess, sys
+
+          def fail(message):
+              print(f"::error title=Fly config refused::{message}")
+              sys.exit(1)
+
+          env, sha, app = os.environ["ENVIRONMENT"], os.environ["SHA"], os.environ["FLY_APP"]
+          group = os.environ["MACHINE_GROUP"]
+          path = f"fly/{env}.toml"
+          if not os.path.isfile(path):
+              fail(f"{sha} has no {path}, so it cannot be deployed to Fly.")
+          def flyctl(*args):
+              return subprocess.run(["flyctl", "config", *args, "--config", path],
+                                    capture_output=True, text=True, timeout=60)
+
+          validated = flyctl("validate")
+          if validated.returncode != 0:
+              fail(f"flyctl does not accept {path}: {' '.join((validated.stdout + validated.stderr).split())}")
+          shown = flyctl("show", "--local")
+          if shown.returncode != 0:
+              fail(f"flyctl cannot read {path}: {shown.stderr.strip()}")
+          config = json.loads(shown.stdout)
+
+          if config.get("app") != app:
+              fail(f"{path} is for app '{config.get('app')}', but this workflow deploys {env} to {app}.")
+
+          http_service = config.get("http_service") or {}
+          services = config.get("services") or []
+          if any(section.get("machine_checks") for section in [config, http_service, *services]):
+              fail(f"{path} defines machine_checks, which run the new image on a second machine.")
+
+          groups = sorted((config.get("processes") or {"app": None}).keys())
+          if len(groups) != 1 or (group and groups != [group]):
+              fail(f"{path} defines the process groups {groups}, but the app's one machine is in '{group or 'no group'}'. A deploy would leave it without a machine.")
+          group = groups[0]
+
+          # flyctl's selector: no processes, the group itself, or "" for the
+          # default group, which the only group is.
+          def applies(entry):
+              selector = entry.get("processes") or []
+              return not selector or any(name in (group, "") for name in selector)
+
+          checks = len(http_service.get("checks") or []) if applies(http_service) else 0
+          checks += sum(len(service.get("tcp_checks") or []) + len(service.get("http_checks") or [])
+                        for service in services if applies(service))
+          checks += sum(1 for check in (config.get("checks") or {}).values() if applies(check))
+          if checks == 0 and not os.environ.get("BOOT_LOG_LINE"):
+              fail(f"{path} has no health check for the '{group}' machine and the caller sets no boot-log-line, so nothing would show the app is ready.")
+
+      - name: Mark the deployment as pending
+        id: pending
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/github-script@v9.0.0
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.SHA,
+              state: 'pending',
+              description: process.env.SHA.substring(0, 7),
+              context: `fly/${process.env.ENVIRONMENT}`,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # The flags keep a deployed commit from starting a second copy, whatever
+      # its fly/<env>.toml says:
+      # - --update-only: Fly updates the machine it finds and never adds one,
+      #   not even for a new process group, so a machine destroyed after the
+      #   check above is not recreated; the deploy fails instead.
+      # - --strategy rolling: updates that machine in place. bluegreen and
+      #   canary start a new machine next to the old one.
+      # - --skip-release-command: a release command runs on a temporary
+      #   machine with the app's secrets.
+      # PACKAGER_VERSION is the build argument the apps' Dockerfiles read the
+      # version from; an app that does not declare it ignores it.
+      - name: Deploy
+        id: deploy
+        if: steps.gate.outputs.skip != 'true'
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          flyctl deploy . \
+            --config "fly/${ENVIRONMENT}.toml" \
+            --app "${FLY_APP}" \
+            --remote-only \
+            --image-label "git-${SHA}" \
+            --build-arg "PACKAGER_VERSION=${SHA}" \
+            --strategy rolling \
+            --update-only \
+            --skip-release-command \
+            --ha=false \
+            --yes
+
+      # flyctl can report success without the app being ready: it updates a
+      # stopped machine without starting it, and a machine without health
+      # checks can start and then crash. So require the app's one machine, on
+      # this image, to be started, to report every health check its config
+      # defines as passing, and to have logged BOOT_LOG_LINE after its latest
+      # start. Fly updates the machine in place, so the buffered logs still
+      # hold the previous boot's line: times are compared in milliseconds, and
+      # the boot must still be the current one afterwards.
+      - name: Wait for the app to be ready
+        id: verify
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          # Polls survive a failed request; only the deadline fails the step.
+          set +e
+          set -uo pipefail
+
+          # The id and latest start, in milliseconds, of the app's only machine
+          # while it runs this image, is started, and reports as many passing
+          # checks as its config defines, at least one unless a boot log line
+          # shows readiness. Empty otherwise.
+          ready_since() {
+            timeout 30 flyctl machines list --app "${FLY_APP}" --json 2>/dev/null \
+              | jq -r --arg tag "git-${SHA}" --argjson need_check "$([ -n "${BOOT_LOG_LINE}" ] && echo false || echo true)" '
+                  select(length == 1) | .[0]
+                  | select(.image_ref.tag == $tag and .state == "started")
+                  | (([.config.services[]?.checks[]?] | length) + (.config.checks // {} | length)) as $expected
+                  | select($expected > 0 or ($need_check | not))
+                  | select((.checks // []) | length == $expected and all(.[]; .status == "passing"))
+                  | "\(.id) \([.events[]? | select(.type == "start") | .timestamp] | max // "")"' 2>/dev/null
+          }
+
+          # Whether machine $1 logged BOOT_LOG_LINE at or after $2, a time in
+          # milliseconds. Always true without a BOOT_LOG_LINE.
+          logged_since() {
+            [ -n "${BOOT_LOG_LINE}" ] || return 0
+            timeout 20 flyctl logs --app "${FLY_APP}" --no-tail --json 2>/dev/null \
+              | jq -e -s --arg id "$1" --argjson since "$2" --arg line "${BOOT_LOG_LINE}" '
+                  def epoch_ms:
+                    ((sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) * 1000)
+                    + (([capture("\\.(?<f>[0-9]+)Z$").f] | first // "0") + "000" | .[0:3] | tonumber);
+                  map(select(.instance == $id and .message == $line and (.timestamp | epoch_ms) >= $since))
+                  | length > 0' >/dev/null 2>&1
+          }
+
+          deadline=$((SECONDS + 180))
+          while [ "${SECONDS}" -lt "${deadline}" ]; do
+            ready="$(ready_since)"
+            if [[ "${ready}" =~ ^[0-9a-z]+\ [0-9]+$ ]] \
+              && logged_since "${ready% *}" "${ready#* }" && [ "$(ready_since)" = "${ready}" ]; then
+              echo "${FLY_APP} runs git-${SHA} on one ready machine."
+              exit 0
+            fi
+            sleep 5
+          done
+          wanted="exactly one started machine on git-${SHA} with every health check passing"
+          if [ -n "${BOOT_LOG_LINE}" ]; then
+            wanted="${wanted}, which logged \"${BOOT_LOG_LINE}\" since its latest start"
+          fi
+          echo "::error title=Not verified::${FLY_APP} did not run ${wanted} within ${SECONDS}s. Check the logs with: fly logs -a ${FLY_APP}"
+          timeout 30 flyctl machines list --app "${FLY_APP}" --json 2>/dev/null \
+            | jq -r '.[] | "\(.id) \(.state) \(.image_ref.tag // "-") checks: \([.checks[]? | .status] | join(",") | if . == "" then "none" else . end)"'
+          exit 1
+
+      - name: Publish the deployment outcome
+        # Only once the pending status is posted, so a run that failed before
+        # touching the app leaves an earlier status of the commit alone.
+        if: always() && steps.pending.outcome == 'success'
+        uses: actions/github-script@v9.0.0
+        env:
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+        with:
+          script: |
+            const ok = process.env.DEPLOY_OUTCOME === 'success' && process.env.VERIFY_OUTCOME === 'success';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.SHA,
+              state: ok ? 'success' : 'failure',
+              description: process.env.SHA.substring(0, 7),
+              context: `fly/${process.env.ENVIRONMENT}`,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+          github-token: ${{ secrets.GITHUB_TOKEN }}
