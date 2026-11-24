@@ -50,9 +50,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Root is the handler for the HTTP requests to /.
-// It returns a simple uptime message useful for monitoring.
+// It returns a simple uptime message useful for monitoring. Fly's health check
+// calls it every 30 seconds, so requests are logged at debug level only.
 func (s *Server) Root(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Received request", "http_method", r.Method, "http_url", r.URL.RequestURI())
+	slog.Debug("Received request", "http_method", r.Method, "http_url", r.URL.RequestURI())
 	w.Header().Set("Content-type", "application/json")
 
 	fmt.Fprintf(w, `{"ping":"%v","what":"%s"}`, time.Now().Unix(), version.Program)

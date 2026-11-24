@@ -1,0 +1,43 @@
+---
+name: Fly Deploy
+
+# Deploys Strillone to Fly.io with the shared Fly Deploy workflow, through
+# the copy in fly-deploy-shared.yml. The rules are in shared-workflows/README.md
+# in dnsimple/dnsimple-engineering.
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'The environment to deploy'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      commit:
+        description: 'Full 40-character sha. Staging: any commit, defaults to main. Production: a rollback to a commit that ran in production before; leave empty to promote staging.'
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/fly-deploy-shared.yml
+    permissions:
+      actions: read
+      contents: read
+      statuses: write
+    with:
+      staging-app: dnsimple-strillone-staging
+      production-app: dnsimple-strillone
+      environment: ${{ inputs.environment }}
+      commit: ${{ inputs.commit }}

@@ -24,3 +24,19 @@ updates:
         update-types:
           - patch
           - minor
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - task
+      - dependencies
+    cooldown:
+      default-days: 3
+    ignore:
+      # Go minor versions move with .tool-versions and go.mod.
+      - dependency-name: golang
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor

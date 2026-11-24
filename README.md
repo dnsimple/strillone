@@ -10,9 +10,7 @@ _Strillone_ is a service to publish the events generated from a DNSimple account
 
 ### Deploy the application
 
-You can use the following button to deploy the service to Heroku.
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/dnsimple/strillone)
+Strillone runs on Fly.io. See [Deployment](#deployment).
 
 ### Check the deploy
 
@@ -59,9 +57,9 @@ To connect Strillone to your Slack webhook, you need to construct a special URL:
 
 For example:
 
-- Your Strillone app is deployed at: `https://my-strillone-app.herokuapp.com`
+- Your Strillone app is deployed at: `https://strillone.dnsimple.tools`
 - Your Slack webhook URL is: `https://hooks.slack.com/services/T12345/B67890/ABCDEFGHIJKLMNO`
-- Your Strillone webhook URL will be: `https://my-strillone-app.herokuapp.com/slack/T12345/B67890/ABCDEFGHIJKLMNO`
+- Your Strillone webhook URL will be: `https://strillone.dnsimple.tools/slack/T12345/B67890/ABCDEFGHIJKLMNO`
 
 ### Step 3: Add the webhook to DNSimple
 
@@ -77,10 +75,52 @@ Strillone reads its configuration from environment variables. `.env.example` lis
 | Name         | Type   | Default                              | Description                                                         |
 |--------------|--------|--------------------------------------|---------------------------------------------------------------------|
 | BIND_ADDRESS | String | `""`                                 | The address the HTTP server listens on. Empty listens on all interfaces. |
-| PORT         | Int    | `4000`                               | The port the HTTP server listens on. Heroku sets it.                |
+| PORT         | Int    | `4000`                               | The port the HTTP server listens on.                                |
 | DNSIMPLE_URL | String | `"https://app.dnsimple.com"`         | Dashboard link host; can be overridden per deployment.              |
 | SLACK_URL    | String | `"https://hooks.slack.com/services"` | Slack incoming webhook base URL.                                    |
 | LOG_LEVEL    | String | `"info"`                             | Log verbosity: `debug`, `info`, `warn`, or `error`.                 |
+
+## Deployment
+
+Strillone runs on Fly.io in the `dnsimple-ops` organization, one machine per
+app:
+
+| Environment | Fly app                      | URL                                        | Webhooks from                                                      |
+|-------------|------------------------------|--------------------------------------------|--------------------------------------------------------------------|
+| staging     | `dnsimple-strillone-staging` | `https://strillone-staging.dnsimple.tools` | The DNSimple sandbox account                                       |
+| production  | `dnsimple-strillone`         | `https://strillone.dnsimple.tools`         | The DNSimple Core, DNSimple Domains and DNSimple Monitors accounts |
+
+The hostnames are CNAMEs to each app's `fly.dev` name, managed in
+[infra-dnsimple](https://github.com/dnsimple/infra-dnsimple), and Fly holds a
+certificate for each (`fly certs list -a <app>`). Webhooks use these hostnames
+rather than `fly.dev`, so moving the app only changes DNS.
+
+The [Fly Deploy](.github/workflows/fly-deploy.yml) workflow deploys them with
+the shared Fly Deploy workflow, whose
+[README](https://github.com/dnsimple/dnsimple-engineering/blob/main/shared-workflows/README.md#fly-deploy) (private to the
+DNSimple organization) has the rules, retries and recovery. This repository is
+public and cannot call that private workflow, so it runs a copy,
+[fly-deploy-shared.yml](.github/workflows/fly-deploy-shared.yml). In short:
+
+1. Merge a PR to main. Once CI passes, the workflow deploys the merged commit
+   to staging.
+2. Once verified, promote it to production with
+   `gh workflow run fly-deploy.yml -f environment=production`, or from the
+   Actions tab. Passing a `commit` for production is only for rollbacks.
+
+Each app runs exactly one machine, which a deploy updates in place: the
+in-memory cache that drops redelivered webhooks lives in that machine. A deploy
+succeeds once the machine runs the new image and passes Fly's health check on
+`/`.
+
+Strillone has no secrets: each webhook URL carries its Slack token. Each GitHub
+environment (`staging`, `production`) holds a `FLY_API_TOKEN` deploy token for
+its app. A production promotion reads the staging machine with the staging
+token.
+
+```shell
+fly logs -a dnsimple-strillone
+```
 
 ## About the name
 

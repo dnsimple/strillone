@@ -1,0 +1,10 @@
+# Only what the image build needs, so local files such as .env never reach the
+# build context.
+*
+!go.mod
+!go.sum
+!Makefile
+!cmd/
+!internal/
+cmd/**/.env*
+internal/**/.env*
