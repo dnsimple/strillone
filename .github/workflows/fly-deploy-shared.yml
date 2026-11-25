@@ -1,6 +1,6 @@
 # A copy of .github/workflows/fly-deploy.yml from the private
 # dnsimple/dnsimple-engineering repository at
-# 39e6d51f8e204dfd9baeb81a076d53eca7a8221a, used by fly-deploy.yml.
+# 471db7bfcb0eccf7dc4d5837507f5cb9d55c3445, used by fly-deploy.yml.
 # Strillone is public, and a public repository cannot call a private
 # repository's workflows. To update it, replace everything below this header
 # with that file at a newer commit, and change the commit above.
@@ -21,6 +21,13 @@ name: Fly Deploy
 # - Neither environment moves backwards on its own: an automatic staging
 #   deploy or a production promotion older than what the app runs does
 #   nothing.
+# - An app with production only (production-only: true) has no staging: every
+#   green CI run of a push to main deploys production, under the same rules as
+#   staging above, and a manual run deploys main's head or any commit on main
+#   with a green CI run, which is also how it rolls back.
+# - The staging environment can go by another name (staging-environment), for
+#   an app whose pre-production environment is, say, its sandbox. The name is
+#   its GitHub environment, its fly/<name>.toml and its fly/<name> status.
 #
 # Each app runs exactly one machine, and a deploy only ever updates it in place
 # (--update-only with the rolling strategy), so it never runs a second copy of
@@ -32,33 +39,45 @@ name: Fly Deploy
 # health check its fly/<environment>.toml defines, and, if the caller sets
 # `boot-log-line`, has logged that line since it last started. The outcome is a
 # `fly/<environment>` commit status. The jobs use the caller's GitHub
-# environments only for their FLY_API_TOKEN (`deployment: false`). Both
-# environments must accept runs from main only, so a workflow edited on a
-# branch cannot reach either token.
+# environments only for their FLY_API_TOKEN (`deployment: false`), which the
+# caller must pass by name: a called workflow reads an environment secret its
+# caller didn't pass as empty. Each environment must accept runs from main
+# only, so a workflow edited on a branch cannot reach its token.
 
 on:
   workflow_call:
     inputs:
       staging-app:
-        description: 'The Fly app of the staging environment'
-        required: true
+        description: 'The Fly app of the staging environment. Required unless production-only is set.'
+        required: false
         type: string
+        default: ''
+      production-only:
+        description: 'The app has no staging: CI deploys production. Must be set explicitly, so a missing staging-app fails instead.'
+        required: false
+        type: boolean
+        default: false
+      staging-environment:
+        description: 'The name of the staging environment, if not staging: its GitHub environment, fly/<name>.toml and fly/<name> status. Not for production-only.'
+        required: false
+        type: string
+        default: 'staging'
       production-app:
         description: 'The Fly app of the production environment'
         required: true
         type: string
       environment:
-        description: 'The environment of a manual run: staging or production. Empty for a CI run.'
+        description: 'The environment of a manual run: staging (or its staging-environment name) or production. Empty for a CI run.'
         required: false
         type: string
         default: ''
       commit:
-        description: 'The commit of a manual run: full 40-character sha. Empty to deploy main (staging) or promote staging (production).'
+        description: 'The commit of a manual run: full 40-character sha. Empty to deploy main (staging, or production without staging) or promote staging (production).'
         required: false
         type: string
         default: ''
       ci-workflow:
-        description: 'The file name of the CI workflow whose green runs deploy staging'
+        description: 'The file name of the CI workflow whose green runs deploy staging (production without staging)'
         required: false
         type: string
         default: 'ci.yml'
@@ -67,6 +86,10 @@ on:
         required: false
         type: string
         default: ''
+    secrets:
+      FLY_API_TOKEN:
+        description: 'Pass the FLY_API_TOKEN secret by name. Each job reads the deploy token of the GitHub environment it runs in.'
+        required: true
 
 permissions: {}
 
@@ -89,8 +112,9 @@ jobs:
       source: ${{ steps.resolve.outputs.source }}
     steps:
       # source says where the commit came from: ci (an automatic deploy),
-      # given (the commit input), main (a manual staging run without one) or
-      # staging (a production promotion, read by the staging-commit job).
+      # given (the commit input), main (a manual run of the environment CI
+      # deploys, without a commit) or staging (a production promotion, read by
+      # the staging-commit job).
       - name: Resolve the environment and commit
         id: resolve
         env:
@@ -100,7 +124,9 @@ jobs:
           INPUT_COMMIT: ${{ inputs.commit }}
           RUN_SHA: ${{ github.event.workflow_run.head_sha }}
           STAGING_APP: ${{ inputs.staging-app }}
+          STAGING_ENVIRONMENT: ${{ inputs.staging-environment }}
           PRODUCTION_APP: ${{ inputs.production-app }}
+          PRODUCTION_ONLY: ${{ inputs.production-only }}
         run: |
           set -euo pipefail
 
@@ -109,37 +135,55 @@ jobs:
             exit 1
           }
 
-          if [ -z "${STAGING_APP}" ] || [ -z "${PRODUCTION_APP}" ] || [ "${STAGING_APP}" = "${PRODUCTION_APP}" ]; then
-            fail "staging-app and production-app must be two different Fly apps."
+          [ -n "${PRODUCTION_APP}" ] || fail "production-app is required."
+          # The environment CI deploys: staging, or production for an app
+          # with production only.
+          if [ "${PRODUCTION_ONLY}" = "true" ]; then
+            [ -z "${STAGING_APP}" ] || fail "An app with production-only takes no staging-app."
+            [ "${STAGING_ENVIRONMENT}" = "staging" ] || fail "An app with production-only takes no staging-environment."
+            ci_environment="production"
+          else
+            if [ -z "${STAGING_APP}" ] || [ "${STAGING_APP}" = "${PRODUCTION_APP}" ]; then
+              fail "staging-app must be a Fly app other than production-app. For an app without staging, set production-only instead."
+            fi
+            # It names a GitHub environment, a file and a status context.
+            [[ "${STAGING_ENVIRONMENT}" =~ ^[a-z][a-z0-9-]{0,62}$ ]] || fail "staging-environment must be at most 63 lowercase letters, digits and dashes, starting with a letter."
+            [ "${STAGING_ENVIRONMENT}" != "production" ] || fail "staging-environment cannot be production."
+            ci_environment="${STAGING_ENVIRONMENT}"
           fi
 
-          environment="${INPUT_ENVIRONMENT:-staging}"
-          case "${environment}" in
-            staging | production) ;;
-            *) fail "Unknown environment '${environment}'." ;;
-          esac
+          environment="${INPUT_ENVIRONMENT:-${ci_environment}}"
+          if [ "${environment}" != "production" ] && [ "${environment}" != "${ci_environment}" ]; then
+            if [ "${PRODUCTION_ONLY}" = "true" ]; then
+              fail "This app has production only, so it cannot deploy '${environment}'."
+            fi
+            fail "Unknown environment '${environment}'. This app deploys ${STAGING_ENVIRONMENT} and production."
+          fi
           sha=""
           source=""
 
           if [ "${EVENT_NAME}" = "workflow_run" ]; then
-            # A CI run only ever deploys staging. The inputs belong to manual
-            # runs, so a caller that sets them here is misconfigured.
+            # A CI run only ever deploys the CI environment. The inputs belong
+            # to manual runs, so a caller that sets them here is misconfigured.
             if [ -n "${INPUT_ENVIRONMENT}" ] || [ -n "${INPUT_COMMIT}" ]; then
               fail "A CI run takes no environment or commit. Pass the workflow_dispatch inputs through, as shared-workflows/README.md in dnsimple/dnsimple-engineering shows."
             fi
-            environment="staging"
+            environment="${ci_environment}"
             sha="${RUN_SHA}"
             source="ci"
           else
             # The environments' branch policies protect the tokens; this
             # explains the failure when a run is started from a branch.
-            [ "${GITHUB_REF}" = "refs/heads/main" ] || fail "Start the workflow from main. To deploy a branch to staging, pass its commit."
+            if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+              [ "${PRODUCTION_ONLY}" = "true" ] || fail "Start the workflow from main. To deploy a branch to ${STAGING_ENVIRONMENT}, pass its commit."
+              fail "Start the workflow from main."
+            fi
             if [ -n "${INPUT_COMMIT}" ]; then
               [[ "${INPUT_COMMIT}" =~ ^[0-9a-f]{40}$ ]] || fail "The commit must be a full 40-character lowercase sha."
               gh api "repos/${GITHUB_REPOSITORY}/commits/${INPUT_COMMIT}" --jq .sha >/dev/null || fail "${INPUT_COMMIT} is not a commit in this repository."
               sha="${INPUT_COMMIT}"
               source="given"
-            elif [ "${environment}" = "staging" ]; then
+            elif [ "${environment}" = "${ci_environment}" ]; then
               sha="${GITHUB_SHA}"
               source="main"
             else
@@ -154,20 +198,21 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
   staging-commit:
-    name: Find the commit staging runs
+    name: Find the commit ${{ inputs.staging-environment }} runs
     needs: resolve
     if: needs.resolve.outputs.source == 'staging'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     # Only for the staging deploy token, which can read the staging app.
     environment:
-      name: staging
+      name: ${{ inputs.staging-environment }}
       deployment: false
     permissions: {}
     outputs:
       sha: ${{ steps.find.outputs.sha }}
     env:
       FLY_APP: ${{ inputs.staging-app }}
+      STAGING_ENVIRONMENT: ${{ inputs.staging-environment }}
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     steps:
       - name: Set up flyctl
@@ -176,7 +221,7 @@ jobs:
           # Pinned: the guarantees above rest on how this version deploys.
           version: 0.5.16
 
-      - name: Read the image the staging machine runs
+      - name: Read the image the ${{ inputs.staging-environment }} machine runs
         id: find
         run: |
           set -euo pipefail
@@ -186,15 +231,15 @@ jobs:
             exit 1
           }
 
-          machines="$(timeout 60 flyctl machines list --app "${FLY_APP}" --json)" || fail "Could not list the staging machines."
+          machines="$(timeout 60 flyctl machines list --app "${FLY_APP}" --json)" || fail "Could not list the ${STAGING_ENVIRONMENT} machines."
           count="$(jq 'length' <<< "${machines}")"
-          [ "${count}" -eq 1 ] || fail "Staging has ${count} machines, expected exactly one."
+          [ "${count}" -eq 1 ] || fail "${STAGING_ENVIRONMENT} has ${count} machines, expected exactly one."
           state="$(jq -r '.[0].state' <<< "${machines}")"
-          [ "${state}" = "started" ] || fail "The staging machine is ${state}, not started."
+          [ "${state}" = "started" ] || fail "The ${STAGING_ENVIRONMENT} machine is ${state}, not started."
           tag="$(jq -r '.[0].image_ref.tag // ""' <<< "${machines}")"
-          [[ "${tag}" =~ ^git-[0-9a-f]{40}$ ]] || fail "The staging machine runs image tag '${tag}', which this workflow did not build. Deploy staging first."
+          [[ "${tag}" =~ ^git-[0-9a-f]{40}$ ]] || fail "The ${STAGING_ENVIRONMENT} machine runs image tag '${tag}', which this workflow did not build. Deploy ${STAGING_ENVIRONMENT} first."
 
-          echo "Promoting ${tag#git-}, which staging ran at $(date -u +%FT%TZ)." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Promoting ${tag#git-}, which ${STAGING_ENVIRONMENT} ran at $(date -u +%FT%TZ)." | tee -a "$GITHUB_STEP_SUMMARY"
           echo "sha=${tag#git-}" >> "$GITHUB_OUTPUT"
 
   deploy:
@@ -228,6 +273,8 @@ jobs:
       SHA: ${{ needs.resolve.outputs.sha || needs.staging-commit.outputs.sha }}
       SOURCE: ${{ needs.resolve.outputs.source }}
       FLY_APP: ${{ needs.resolve.outputs.environment == 'production' && inputs.production-app || inputs.staging-app }}
+      STAGING_ENVIRONMENT: ${{ inputs.staging-environment }}
+      PRODUCTION_ONLY: ${{ inputs.production-only }}
       CI_WORKFLOW: ${{ inputs.ci-workflow }}
       CI_RUN_ID: ${{ github.event.workflow_run.id }}
       BOOT_LOG_LINE: ${{ inputs.boot-log-line }}
@@ -289,26 +336,46 @@ jobs:
               # its creation time and id, so only the newest green run of the
               # CI workflow deploys, and a run of any other workflow never does.
               newest="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${CI_WORKFLOW}/runs?branch=main&event=push&status=success&per_page=1" \
-                --jq '.workflow_runs[0] // {} | "\(.id // "") \(.head_sha // "")"')"
+                --jq '.workflow_runs[0] // {} | "\(.id // "") \(.head_sha // "")"')" || fail "Could not list the green ${CI_WORKFLOW} runs on main."
               [ "${newest}" = "${CI_RUN_ID} ${SHA}" ] || skip "Run ${CI_RUN_ID} of ${SHA} is not the newest green ${CI_WORKFLOW} run on main (${newest:-none}). That run deploys instead."
-              # The newest green run can still be older than what staging
+              # Checked here, in the queue: main may have been rewritten since
+              # the run, and its replacement's CI not have finished yet.
+              on_main || skip "${SHA} is no longer on main."
+              # The newest green run can still be older than what the app
               # runs, for example after a newer commit's CI re-run failed, or
               # after a newer commit was deployed by hand.
               read_newer
-              [ -z "${NEWER}" ] || skip "Staging runs ${NEWER}, which is newer than ${SHA}."
+              [ -z "${NEWER}" ] || skip "${FLY_APP} runs ${NEWER}, which is newer than ${SHA}."
               ;;
             staging)
-              on_main || fail "Staging runs ${SHA}, which is not on main. Deploy main to staging before promoting."
-              state="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/statuses?per_page=100" \
-                --jq '[.[] | select(.context == "fly/staging")][0].state // "none"')"
-              [ "${state}" = "success" ] || fail "The last fly/staging status for ${SHA} is ${state}, not success. Deploy it to staging again."
+              on_main || fail "${STAGING_ENVIRONMENT} runs ${SHA}, which is not on main. Deploy main to ${STAGING_ENVIRONMENT} before promoting."
+              # Assigned before it is compared, like the results above.
+              statuses="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/statuses?per_page=100")" || fail "Could not read the statuses of ${SHA}."
+              state="$(jq -r --arg context "fly/${STAGING_ENVIRONMENT}" '[.[] | select(.context == $context)][0].state // "none"' <<< "${statuses}")"
+              [ "${state}" = "success" ] || fail "The last fly/${STAGING_ENVIRONMENT} status for ${SHA} is ${state}, not success. Deploy it to ${STAGING_ENVIRONMENT} again."
               # A promotion chosen earlier, for example a failed one whose job
               # is re-run, must not replace a newer one that went out since.
               read_newer
               [ -z "${NEWER}" ] || fail "Production already runs ${NEWER}, which is newer than ${SHA}. To roll back, pass the commit."
               ;;
-            given)
-              if [ "${ENVIRONMENT}" = "production" ]; then
+            main | given)
+              if [ "${ENVIRONMENT}" != "production" ]; then
+                # Staging takes any commit by hand.
+                :
+              elif [ "${PRODUCTION_ONLY}" = "true" ]; then
+                # Without staging, production takes main's head or, given by
+                # hand to roll back, any older commit on main, once CI passed
+                # on it. A run without a commit must still find main there, so
+                # re-running an old one cannot roll production back.
+                if [ "${SOURCE}" = "main" ]; then
+                  status="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${SHA}...main" --jq .status)" || fail "Could not compare ${SHA} with main."
+                  [ "${status}" = "identical" ] || fail "main has moved on from ${SHA}, which this run was started at. Start a new run, or pass the commit to roll back."
+                fi
+                on_main || fail "${SHA} is not on main."
+                green="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${CI_WORKFLOW}/runs?head_sha=${SHA}&branch=main&event=push&status=success&per_page=1" \
+                  --jq '.total_count')" || fail "Could not look up the ${CI_WORKFLOW} runs of ${SHA}."
+                [ "${green}" -gt 0 ] || fail "${SHA} has no green ${CI_WORKFLOW} run on main."
+              else
                 on_main || fail "${SHA} is not on main."
                 # A rollback target must have been released to production
                 # (Fly's release history, readable only with the production
@@ -321,7 +388,7 @@ jobs:
                 verified="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/statuses?per_page=100" \
                   --jq 'any(.[]; .context == "fly/production" and .state == "success")')"
                 if [ "${ran}" != "true" ] || [ "${verified}" != "true" ]; then
-                  fail "${SHA} never ran in production with a verified deploy. A commit given for production is a rollback; to release a new commit, deploy it to staging and promote staging. To retry a failed promotion, re-run its failed job."
+                  fail "${SHA} never ran in production with a verified deploy. A commit given for production is a rollback; to release a new commit, deploy it to ${STAGING_ENVIRONMENT} and promote ${STAGING_ENVIRONMENT}. To retry a failed promotion, re-run its failed job."
                 fi
               fi
               ;;
