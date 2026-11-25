@@ -41,3 +41,5 @@ jobs:
       production-app: dnsimple-strillone
       environment: ${{ inputs.environment }}
       commit: ${{ inputs.commit }}
+    secrets:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
