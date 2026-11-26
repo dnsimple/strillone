@@ -2,8 +2,8 @@
 name: Fly Deploy
 
 # Deploys Strillone to Fly.io with the shared Fly Deploy workflow, through
-# the copy in fly-deploy-shared.yml. The rules are in shared-workflows/README.md
-# in dnsimple/dnsimple-engineering.
+# the copy in fly-deploy-shared.yml. The rules are in docs/fly-deploy.md in
+# dnsimple/infra-flyio.
 
 on:
   workflow_run:

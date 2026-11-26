@@ -97,7 +97,7 @@ rather than `fly.dev`, so moving the app only changes DNS.
 
 The [Fly Deploy](.github/workflows/fly-deploy.yml) workflow deploys them with
 the shared Fly Deploy workflow, whose
-[README](https://github.com/dnsimple/dnsimple-engineering/blob/main/shared-workflows/README.md#fly-deploy) (private to the
+[documentation](https://github.com/dnsimple/infra-flyio/blob/main/docs/fly-deploy.md) (private to the
 DNSimple organization) has the rules, retries and recovery. This repository is
 public and cannot call that private workflow, so it runs a copy,
 [fly-deploy-shared.yml](.github/workflows/fly-deploy-shared.yml). In short:
